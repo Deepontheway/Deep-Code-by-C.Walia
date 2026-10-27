@@ -181,6 +181,8 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
 .field input:focus { border-color: var(--accent); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.free-models { border-top: 1px solid var(--line); padding-top: 12px; margin-bottom: 4px; }
+.free-title { font-size: 12px; font-weight: 600; color: var(--green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
 .checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .approval {
@@ -274,7 +276,7 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal">
     <h2>Settings</h2>
-    <p class="sub">The model runs over the internet. Your API key is stored in Windows Credential Manager, never in this page.</p>
+    <p class="sub">Free OpenCode models need no API key. Paid models use a key stored in Windows Credential Manager, never in this page.</p>
 
     <div class="presets">
       <button class="btn small" data-preset="opencode">OpenCode Zen</button>
@@ -282,6 +284,12 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
       <button class="btn small" data-preset="openrouter">OpenRouter</button>
       <button class="btn small" data-preset="ollama">Ollama (local)</button>
       <button class="btn small" data-preset="openai">OpenAI</button>
+    </div>
+
+    <div class="free-models">
+      <div class="free-title">OpenCode Zen free models - no API key needed</div>
+      <div class="presets" id="freeModelButtons"><span class="hint">Loading free models...</span></div>
+      <div class="hint" style="text-align:left;margin:-4px 0 14px">Includes big-pickle and every model ending in -free (Nemotron, GLM, DeepSeek, and others). Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require a key.</div>
     </div>
 
     <div class="field">
@@ -333,6 +341,7 @@ const state = {
   busy: false,
   approvals: []
 };
+let freeModelsCache = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -363,8 +372,10 @@ function updateModelChip() {
   }
   let host = "";
   try { host = new URL(state.config.base_url).host; } catch (e) { host = state.config.base_url; }
-  chip.textContent = state.config.model + " @ " + host;
-  chip.title = state.config.base_url + " | " + state.config.model;
+  const model = state.config.model;
+  const isFree = host.endsWith("opencode.ai") && (model === "big-pickle" || model.toLowerCase().endsWith("-free"));
+  chip.textContent = model + (isFree && !state.config.api_key_configured ? " (free)" : "") + " @ " + host;
+  chip.title = state.config.base_url + " | " + model;
 }
 
 function renderSessions() {
@@ -541,6 +552,7 @@ async function sendMessage() {
     renderMessages(messages);
     state.approvals = data.pending_approvals || [];
     renderApprovals();
+    if (data.notice) toast(data.notice, false);
     await loadSessions();
   } catch (error) {
     toast(error.message, true);
@@ -577,6 +589,42 @@ async function decideApproval(approvalId, approved) {
   }
 }
 
+async function loadFreeModels() {
+  const holder = $("freeModelButtons");
+  if (freeModelsCache) {
+    renderFreeModels(holder, freeModelsCache);
+    return;
+  }
+  let models = ["big-pickle", "deepseek-v4.1-flash-free", "glm-5.3-flash-free", "flint-40b-free"];
+  try {
+    const response = await fetch("/api/opencode/models");
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data.free) && data.free.length) {
+        models = data.free;
+        freeModelsCache = models;
+      }
+    }
+  } catch (error) { /* keep fallback list */ }
+  renderFreeModels(holder, models);
+}
+
+function renderFreeModels(holder, models) {
+  holder.textContent = "";
+  models.forEach((model) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn small";
+    button.textContent = model;
+    button.title = "Use " + model + " with no API key";
+    button.addEventListener("click", () => {
+      $("baseUrl").value = "https://opencode.ai/zen/v1";
+      $("model").value = model;
+    });
+    holder.appendChild(button);
+  });
+}
+
 function openSettings() {
   $("baseUrl").value = state.config.base_url || "";
   $("model").value = state.config.model || "";
@@ -585,16 +633,29 @@ function openSettings() {
   $("clearKey").checked = false;
   $("settingsModal").classList.add("open");
   $("baseUrl").focus();
+  loadFreeModels();
 }
 
 async function saveSettings() {
-  const payload = {
-    base_url: $("baseUrl").value.trim(),
-    model: $("model").value.trim(),
-    workspace: $("workspace").value.trim(),
-    clear_api_key: $("clearKey").checked
-  };
+  const baseUrl = $("baseUrl").value.trim();
+  const model = $("model").value.trim();
   const key = $("apiKey").value.trim();
+  const clearKey = $("clearKey").checked;
+  let host = "";
+  try { host = new URL(baseUrl).hostname.toLowerCase(); } catch (error) { /* validated by the server */ }
+  const isOpenCode = host === "opencode.ai" || host.endsWith(".opencode.ai");
+  const isFree = model === "big-pickle" || model.toLowerCase().endsWith("-free");
+  const hasKey = !clearKey && Boolean(key || state.config.api_key_configured);
+  if (isOpenCode && model && !isFree && !hasKey) {
+    toast("That OpenCode model is paid. Pick a free model or add an API key.", true);
+    return;
+  }
+  const payload = {
+    base_url: baseUrl,
+    model: model,
+    workspace: $("workspace").value.trim(),
+    clear_api_key: clearKey
+  };
   if (key) payload.api_key = key;
   try {
     const result = await api("/api/config", { method: "PUT", body: JSON.stringify(payload) });

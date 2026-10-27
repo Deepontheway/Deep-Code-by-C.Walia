@@ -40,7 +40,7 @@ def _config() -> dict[str, Any]:
             return data
     except (OSError, ValueError):
         pass
-    return {"base_url": "https://api.openai.com/v1", "model": "", "workspace": ""}
+    return {"base_url": "https://opencode.ai/zen/v1", "model": "big-pickle", "workspace": ""}
 
 
 def _save_config(data: dict[str, Any]) -> None:
@@ -107,11 +107,26 @@ def health() -> dict:
     return {"status": "ok", "product": "WaliaCode", "version": app.version}
 
 
+@app.get("/api/opencode/models")
+async def opencode_models() -> dict:
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(8.0), follow_redirects=False) as client:
+            response = await client.get("https://opencode.ai/zen/v1/models")
+            response.raise_for_status()
+            payload = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="Could not load the OpenCode model catalog.") from exc
+    ids = [str(item.get("id", "")) for item in payload.get("data", []) if isinstance(item, dict)]
+    ids = [item for item in ids if item]
+    free = [item for item in ids if agent.is_free_opencode_model(item)]
+    return {"free": free, "all": ids}
+
+
 @app.get("/api/config")
 def get_config() -> dict:
     config = _config()
     return {
-        "base_url": config.get("base_url", "https://api.openai.com/v1"),
+        "base_url": config.get("base_url", "https://opencode.ai/zen/v1"),
         "model": config.get("model", ""),
         "workspace": config.get("workspace", ""),
         "api_key_configured": bool(_get_api_key()),
@@ -175,7 +190,7 @@ async def post_chat(request: ChatInput) -> dict:
         raise HTTPException(status_code=404, detail="Chat session not found.")
     workspace = config.get("workspace") or None
     try:
-        base_url = security.validate_provider_url(config.get("base_url", "https://api.openai.com/v1"))
+        base_url = security.validate_provider_url(config.get("base_url", "https://opencode.ai/zen/v1"))
         result = await agent.chat(
             session_id=session_id,
             user_text=request.message,

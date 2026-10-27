@@ -190,6 +190,13 @@ function Merge-Unique {
     return ,$list.ToArray()
 }
 
+function Test-FreeOpenCodeModel {
+    param([string]$Name)
+    if (-not $Name) { return $false }
+    $n = $Name.Trim().ToLowerInvariant()
+    return ($n -eq "big-pickle" -or $n -like "*-free")
+}
+
 function Get-GitHubToken {
     if ($env:GH_TOKEN) { return ([string]$env:GH_TOKEN).Trim() }
     if ($env:GITHUB_TOKEN) { return ([string]$env:GITHUB_TOKEN).Trim() }
@@ -596,38 +603,11 @@ if ($localModelsEnabled) {
 } else {
     Write-Step "Configuring online AI model provider (internet, no local model download)..."
 
-    if (-not $env:OPENCODE_API_KEY -and -not $env:OPENROUTER_API_KEY -and -not $ApiKey -and -not $BaseUrl -and $Provider -eq "auto" -and -not (Get-GitHubToken)) {
-        Write-Host ""
-        Write-Host "Choose an online provider (models run in the cloud, nothing is downloaded):" -ForegroundColor Cyan
-        Write-Host "  1) OpenCode Zen      - free API key at https://opencode.ai/auth" -ForegroundColor White
-        Write-Host "  2) GitHub Models     - uses GitHub login (gh auth login)" -ForegroundColor White
-        Write-Host "  3) OpenRouter        - free API key at https://openrouter.ai/keys" -ForegroundColor White
-        Write-Host "  4) Custom            - any OpenAI-compatible HTTPS endpoint" -ForegroundColor White
-        Write-Host "  5) Skip              - configure later inside the app" -ForegroundColor White
-        $choice = Read-Host "Enter 1-5 (default 1)"
-        if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
-        switch ($choice) {
-            "1" { $Provider = "opencode" }
-            "2" { $Provider = "github" }
-            "3" { $Provider = "openrouter" }
-            "4" { $Provider = "custom" }
-            default { $Provider = "none" }
-        }
-    }
-
     if ($Provider -eq "auto") {
-        if (Get-GitHubToken) {
-            $Provider = "github"
-        } elseif ($env:OPENCODE_API_KEY) {
-            $Provider = "opencode"
-        } elseif ($env:OPENROUTER_API_KEY) {
-            $Provider = "openrouter"
-        } elseif ($ApiKey) {
-            $Provider = "opencode"
-        } elseif ($BaseUrl) {
+        if ($BaseUrl) {
             $Provider = "custom"
         } else {
-            $Provider = "none"
+            $Provider = "opencode"
         }
     }
 
@@ -649,14 +629,29 @@ if ($localModelsEnabled) {
         "opencode" {
             $token = $ApiKey
             if (-not $token) { $token = $env:OPENCODE_API_KEY }
-            if (-not $token) {
-                Write-Host "Create a free OpenCode Zen key at https://opencode.ai/auth" -ForegroundColor Cyan
-                $token = Read-Secret "OpenCode Zen API key (leave blank to skip)"
+            $chosenModel = $Model
+            if (-not $chosenModel) { $chosenModel = "big-pickle" }
+            if (-not (Test-FreeOpenCodeModel $chosenModel) -and -not $token) {
+                Write-Host "'$chosenModel' is a paid OpenCode model and needs an API key." -ForegroundColor Yellow
+                Write-Host "Create one at https://opencode.ai/auth, or use any free model (name ends in -free, plus big-pickle)." -ForegroundColor Cyan
+                if ([Environment]::UserInteractive) {
+                    try {
+                        $token = Read-Secret "OpenCode API key for paid model (leave blank to use big-pickle free)"
+                    } catch {
+                        $token = $null
+                    }
+                }
+                if (-not $token) {
+                    $chosenModel = "big-pickle"
+                    Write-Host "No key entered - using the free big-pickle model." -ForegroundColor Green
+                }
             }
-            if ($token) {
-                $providerBaseUrl = "https://opencode.ai/zen/v1"
-                if ($Model) { $providerModel = $Model } else { $providerModel = "big-pickle" }
-                $providerKey = $token
+            $providerBaseUrl = "https://opencode.ai/zen/v1"
+            $providerModel = $chosenModel
+            $providerKey = $token
+            if (Test-FreeOpenCodeModel $chosenModel -and -not $token) {
+                $providerLabel = "OpenCode Zen (free, no API key)"
+            } else {
                 $providerLabel = "OpenCode Zen"
             }
         }

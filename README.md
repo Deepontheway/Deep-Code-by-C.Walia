@@ -182,22 +182,26 @@ Also auto detects runtimes, creates virtual environments, sets up conda/anaconda
 
 ## Free Models Galore
 
-Get access to insanely powerful models for FREE. By default they run online over your internet connection, so there is nothing to download. Switch models any time in **Settings**, or opt into local Ollama models with `-LocalModels`.
+Get access to powerful models for FREE. By default they run online over your internet connection, so there is nothing to download. Switch models any time in **Settings**, or opt into local Ollama models with `-LocalModels`.
+
+Free OpenCode models need **no API key**. That means `big-pickle` plus every model whose name ends in `-free`. The app loads the current list from OpenCode automatically, so new free models appear in Settings.
 
 | Model | Source | Notes |
 | --- | --- | --- |
-| opencode/big-pickle | OpenCode (Free) | **Default**. Insanely well rounded. Great at everything |
-| qwen3-coder-480b-a35b-instruct | OpenCode (Free) | Absolute beast for massive projects and refactors |
-| qwen3-coder-30b-a3b-instruct | OpenCode/Ollama | Incredible bang for your buck |
-| deepseek-v3.1 | OpenCode (Free) | Clean code, great reasoning, very reliable |
-| deepseek-chat-v3-0324 | OpenCode (Free) | Fantastic all rounder |
-| deepseek-coder-v2-instruct | Ollama (Local) | Amazing for debugging and fixing bugs |
-| kimi-k2 / kimi-k2.1 | OpenCode (Free) | Massive context window. Great for huge codebases |
-| grok-code-fast-1 | OpenCode (Free) | Blazing fast edits and iterations |
-| seed-coder-8b/36b | OpenCode/Ollama | Very clean, human readable code |
-| codestral-2501/2508 | OpenCode (Free) | Great for quick fixes and completions |
-| claude-sonnet-4.5 | OpenCode (Free) | Exceptionally clean and easy to read |
-| qwen2.5-coder-32b/14b | Ollama (Local) | Runs great locally offline |
+| big-pickle | OpenCode Zen (free, no key) | **Default**. Well rounded, great at everything |
+| deepseek-v4.1-flash-free | OpenCode Zen (free, no key) | Fast DeepSeek coding model |
+| glm-5.3-flash-free | OpenCode Zen (free, no key) | Fast GLM coding model |
+| nemotron-3.5-lightning-free | OpenCode Zen (free, no key) | Fast Nemotron model |
+| nemotron-3.5-super-vl-free | OpenCode Zen (free, no key) | Nemotron vision-language model |
+| mimo-v2.6-flash-free | OpenCode Zen (free, no key) | Fast general model |
+| flint-40b-free | OpenCode Zen (free, no key) | 40B general coding model |
+| beam-free | OpenCode Zen (free, no key) | General model |
+| jev-1.13-free | OpenCode Zen (free, no key) | General model |
+| qwen3-coder:14b | Ollama (local, no key) | Opt-in download, runs offline |
+| qwen2.5-coder:32b | Ollama (local, no key) | Opt-in download, runs offline |
+| deepseek-coder-v2:16b | Ollama (local, no key) | Opt-in download, runs offline |
+
+Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require an API key. If a free model hits its anonymous usage limit, the app automatically retries another free model.
 
 ## Automation On Another Level
 
@@ -288,7 +292,7 @@ Blends the finest parts of [opencode](https://github.com/opencode-ai/opencode), 
 1. Install Pinokio
 2. Download from URL: https://github.com/Deepontheway/Deep-Code-by-C.Walia
 3. Click **Install** - auto installs Node.js LTS, Git, Python 3.12, Miniconda/Anaconda, SQLite, Microsoft Visual Studio Build Tools and all dependencies (no model downloads)
-4. Click **Start** - the app opens at http://127.0.0.1:8765, where you choose your online provider and API key
+4. Click **Start** - the app opens at http://127.0.0.1:8765 with the free, keyless `big-pickle` model ready to chat
 5. Start building fr
 
 ## Direct Install From GitHub
@@ -313,20 +317,22 @@ Prefer clicking instead of typing:
 
 ### Online models (default, nothing downloaded)
 
-Pick a provider during setup, or pass it up front:
+The default is OpenCode Zen with `big-pickle`, and it needs no API key. Other free online models (Nemotron, GLM, DeepSeek, and more) are any model ending in `-free`. Pass a provider up front if you want something else:
 
 | Provider | Command | Notes |
 | --- | --- | --- |
-| OpenCode Zen | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider opencode -ApiKey <key>` | Free key at https://opencode.ai/auth, default model `big-pickle` |
+| OpenCode Zen free | `.\FULL_SETUP_NO_PINOKIO.ps1 -NoLocalModels` | **Default**, no key, model `big-pickle` |
+| OpenCode Zen free model | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider opencode -Model deepseek-v4.1-flash-free -NoLocalModels` | Any `-free` model or `big-pickle`, no key |
+| OpenCode Zen paid | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider opencode -Model claude-sonnet-5 -ApiKey <key>` | Paid models require a key from https://opencode.ai/auth |
 | GitHub Models | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider github` | Reuses your `gh auth login` token, default `openai/gpt-4o-mini` |
 | OpenRouter | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider openrouter -ApiKey <key>` | Free key at https://openrouter.ai/keys |
 | Custom | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider custom -BaseUrl https://host/v1 -Model name -ApiKey <key>` | Any OpenAI-compatible HTTPS endpoint |
 | Local (opt-in) | `.\FULL_SETUP_NO_PINOKIO.ps1 -LocalModels` | Popup asks Yes/No; Yes installs Ollama and pulls Qwen/DeepSeek models, about 38 GB |
 | Online only | `.\FULL_SETUP_NO_PINOKIO.ps1 -NoLocalModels` | Skips the popup and never downloads local models |
 
-Big Pickle and the other cloud models run online and are never downloaded. Local copies available through Ollama are Qwen3 Coder 14B, Qwen2.5 Coder 32B, and DeepSeek Coder V2 16B.
+Big Pickle and the other cloud models run online and are never downloaded. Local copies available through Ollama are Qwen3 Coder 14B, Qwen2.5 Coder 32B, and DeepSeek Coder V2 16B. Local Qwen models also need no API key.
 
-API keys are stored in Windows Credential Manager, never in the repo. You can change the provider, model, workspace, or key any time from **Settings** in the app. Chat history and config live in `%LOCALAPPDATA%\Deep Code by C.Walia`.
+Free models need no API key. Paid model keys are stored in Windows Credential Manager, never in the repo. You can change the provider, model, workspace, or key any time from **Settings** in the app. Chat history and config live in `%LOCALAPPDATA%\Deep Code by C.Walia`.
 
 Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps. The uninstaller offers to remove the saved API key, chats, and settings too.
 
@@ -340,7 +346,7 @@ python -m venv venv
 .\RUN_DEEP_CODE_NO_PINOKIO.bat
 ```
 
-The app opens at http://127.0.0.1:8765. Use **Settings** to enter your provider URL, model, workspace folder, and API key. No local model files are required.
+The app opens at http://127.0.0.1:8765. Free OpenCode models work immediately with no API key. Use **Settings** to pick another free model, set your workspace folder, or add a key for paid models. No local model files are required.
 
 ## Usage Guide
 
@@ -362,7 +368,7 @@ It'll ask questions if needed, plan, build, show diffs, ask approval for risky s
 
 - **Talk Naturally** - Don't overthink prompts. Casual works best
 - **Learn While Building** - Ask it to explain things
-- **Use Right Model** - Big Pickle general, Qwen for big refactors, local Ollama only if you opted in
+- **Use Right Model** - Big Pickle for general work, free DeepSeek/GLM/Nemotron models for variety, local Qwen via Ollama only if you opted in
 - **Use Sub Agents** - For massive projects
 - **Banter Back** - Makes it funnier
 - **Take Breaks** - Tell it if burnt out

@@ -2,12 +2,39 @@ from __future__ import annotations
 
 import json
 from typing import Callable
+from urllib.parse import urlsplit
 
 import httpx
 
 from . import security
 from .skills import list_skills, read_skill
 from .store import Store
+
+FREE_OPENCODE_MODELS = (
+    "big-pickle",
+    "deepseek-v4.1-flash-free",
+    "glm-5.3-flash-free",
+    "flint-40b-free",
+    "mimo-v2.6-flash-free",
+    "nemotron-3.5-lightning-free",
+    "nemotron-3.5-super-vl-free",
+    "beam-free",
+    "jev-1.13-free",
+)
+
+
+def is_opencode_provider(base_url: str) -> bool:
+    try:
+        host = (urlsplit(base_url).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    return host == "opencode.ai" or host.endswith(".opencode.ai")
+
+
+def is_free_opencode_model(model: str) -> bool:
+    name = (model or "").strip().lower()
+    return name == "big-pickle" or name.endswith("-free")
+
 
 TOOLS = [
     {"type": "function", "function": {"name": "list_workspace_files", "description": "List non-hidden files in the selected project workspace.", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
@@ -68,6 +95,13 @@ async def chat(
         raise AgentError("Message must contain 1–20,000 characters.")
     if not model.strip():
         raise AgentError("Configure a model name before starting a chat.")
+    opencode = is_opencode_provider(base_url)
+    free_model = opencode and is_free_opencode_model(model)
+    if opencode and not api_key and not free_model:
+        raise AgentError(
+            f"'{model}' is a paid OpenCode model. Add an API key in Settings, or choose a free model "
+            "such as big-pickle, deepseek-v4.1-flash-free, or glm-5.3-flash-free."
+        )
     history = store.messages(session_id, limit=30)
     store.add_message(session_id, "user", user_text)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -78,21 +112,61 @@ async def chat(
         headers["Authorization"] = f"Bearer {api_key}"
     endpoint = base_url.rstrip("/") + "/chat/completions"
     pending_ids: list[str] = []
+    fallback_notice: str | None = None
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(timeout), follow_redirects=False) as client:
         for _ in range(max_tool_rounds):
-            try:
-                response = await client.post(endpoint, headers=headers, json={"model": model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "temperature": 0.2})
-                response.raise_for_status()
-                payload = response.json()
-                assistant = payload["choices"][0]["message"]
-            except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
-                raise AgentError(f"Model request failed: {exc}") from exc
+            payload = None
+            last_status = None
+            candidates = [model]
+            if free_model:
+                candidates.extend(item for item in FREE_OPENCODE_MODELS if item.lower() != model.lower())
+            for index, candidate in enumerate(candidates):
+                try:
+                    response = await client.post(
+                        endpoint,
+                        headers=headers,
+                        json={"model": candidate, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "temperature": 0.2},
+                    )
+                except httpx.HTTPError as exc:
+                    raise AgentError(f"Model request failed: {exc}") from exc
+                if response.status_code == 429:
+                    last_status = 429
+                    continue
+                if response.status_code in {401, 403}:
+                    raise AgentError("The provider rejected the request. Check the API key in Settings, or switch to a free OpenCode model.")
+                if response.status_code == 402:
+                    raise AgentError("This model needs paid credits. Check your API key or switch to a free model.")
+                if index > 0 and response.status_code in {400, 404}:
+                    last_status = response.status_code
+                    continue
+                try:
+                    response.raise_for_status()
+                    payload = response.json()
+                    assistant = payload["choices"][0]["message"]
+                except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
+                    raise AgentError(f"Model request failed: {exc}") from exc
+                if candidate != model:
+                    fallback_notice = f"'{model}' was unavailable or rate-limited, so I switched to '{candidate}'."
+                    model = candidate
+                    free_model = True
+                break
+            if payload is None:
+                if free_model and last_status == 429:
+                    raise AgentError(
+                        "Free OpenCode models are rate-limited right now. Try again later, pick another free model "
+                        "in Settings, or add an API key for a paid model."
+                    )
+                if free_model:
+                    raise AgentError("Free OpenCode models are unavailable right now. Pick another free model in Settings or try again later.")
+                if last_status == 429:
+                    raise AgentError("The provider is rate-limiting this model. Try again later or check your plan.")
+                raise AgentError("The model request failed. Check the model name and provider settings.")
             calls = assistant.get("tool_calls") or []
             if not calls:
                 text = assistant.get("content") or "(The model returned no text.)"
                 store.add_message(session_id, "assistant", text)
-                return {"session_id": session_id, "reply": text, "pending_approvals": store.pending_approvals(session_id)}
+                return {"session_id": session_id, "reply": text, "pending_approvals": store.pending_approvals(session_id), "notice": fallback_notice}
             messages.append({"role": "assistant", "content": assistant.get("content"), "tool_calls": calls})
             for call in calls:
                 function = call.get("function", {})
@@ -112,7 +186,7 @@ async def chat(
             if pending_ids:
                 summary = "I prepared action(s) that are waiting for your review. Nothing has been written, executed, or fetched yet. Review the approval card(s) below."
                 store.add_message(session_id, "assistant", summary)
-                return {"session_id": session_id, "reply": summary, "pending_approvals": store.pending_approvals(session_id)}
+                return {"session_id": session_id, "reply": summary, "pending_approvals": store.pending_approvals(session_id), "notice": fallback_notice}
     notice = "I stopped after the configured tool-call limit. Review the progress above and send a follow-up if you want me to continue."
     store.add_message(session_id, "assistant", notice)
-    return {"session_id": session_id, "reply": notice, "pending_approvals": store.pending_approvals(session_id)}
+    return {"session_id": session_id, "reply": notice, "pending_approvals": store.pending_approvals(session_id), "notice": fallback_notice}
