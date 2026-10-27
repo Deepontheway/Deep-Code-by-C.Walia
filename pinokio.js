@@ -1,25 +1,21 @@
-module.exports = {
+﻿module.exports = {
   version: "1.0.0",
-  title: "WaliaCode",
-  description: "Local-first coding and personal agent",
-  icon: "icon.svg",
+  title: "Walia Code",
+  description: "Full-fledged autonomous coding agent - build apps, games, automate everything",
+  icon: "icon.png",
   menu: async (kernel, info) => {
-    const installed = info.exists("app/venv");
-    const running = info.running("start.json");
+    const installed = info.exists("node_modules");
+    const running = info.running("pinokio/start.json");
     if (!installed) {
-      return [{ icon: "fa-solid fa-plug", text: "Install WaliaCode", href: "install.json" }];
+      return [{ icon: "fa-solid fa-download", text: "Install Walia Code", href: "pinokio/install.json" }];
     }
     if (running) {
-      const state = info.local("start.json") || {};
-      const menu = [{ icon: "fa-solid fa-terminal", text: "Server log", href: "start.json" }];
-      if (state.url) menu.unshift({ icon: "fa-solid fa-code", text: "Open WaliaCode", href: state.url });
-      menu.push({ icon: "fa-solid fa-rotate", text: "Update dependencies", href: "update.json" });
-      return menu;
+      return [{ icon: "fa-solid fa-terminal", text: "View Terminal", href: "pinokio/start.json" }, { icon: "fa-solid fa-rotate", text: "Update", href: "pinokio/update.json" }];
     }
     return [
-      { icon: "fa-solid fa-rocket", text: "Start WaliaCode", href: "start.json" },
-      { icon: "fa-solid fa-rotate", text: "Update dependencies", href: "update.json" },
-      { icon: "fa-solid fa-plug", text: "Reinstall", href: "install.json" }
+      { icon: "fa-solid fa-rocket", text: "Start Walia Code", href: "pinokio/start.json" },
+      { icon: "fa-solid fa-rotate", text: "Update", href: "pinokio/update.json" },
+      { icon: "fa-solid fa-download", text: "Reinstall", href: "pinokio/install.json" }
     ];
   }
 };
