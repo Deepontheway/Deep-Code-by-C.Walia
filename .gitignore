@@ -5,3 +5,8 @@ dist
 *.log
 references
 .DS_Store
+.venv/
+venv/
+app/venv/
+__pycache__/
+*.pyc
