@@ -1,3 +1,2 @@
-﻿#!/usr/bin/env node
-import { runCli } from '../packages/cli/index.js';
-runCli();
+#!/usr/bin/env node
+import('../packages/cli/index.js').then(m => m.runCli()).catch(e => { console.error(e); process.exit(1); });
