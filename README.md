@@ -32,6 +32,7 @@
 - [Learning From Open Source The Right Way](#learning-from-open-source-the-right-way)
 - [Integration Of The Best Projects](#integration-of-the-best-projects)
 - [Pinokio One Click Installation](#pinokio-one-click-installation)
+- [Direct Install From GitHub](#direct-install-from-github-no-clone-no-pinokio)
 - [Manual Installation Guide](#manual-installation-guide)
 - [Usage Guide](#usage-guide)
 - [Tips Tricks & Advice](#tips-tricks--advice)
@@ -290,14 +291,36 @@ Blends the finest parts of [opencode](https://github.com/opencode-ai/opencode), 
 4. Click **Start**
 5. Start building fr
 
+## Direct Install From GitHub
+
+No clone. No Pinokio. One command downloads the latest source from GitHub, installs every dependency, pulls the AI models, creates shortcuts and registers an uninstaller.
+
+Open **PowerShell** and run:
+
+```powershell
+irm https://raw.githubusercontent.com/Deepontheway/Deep-Code-by-C.Walia/main/Install-FromGitHub.ps1 | iex
+```
+
+It shows a live download percentage, speed and remaining time, then installs to its own Programs folder:
+
+- `C:\Program Files\Deep Code by C.Walia` when run as Administrator
+- `%LOCALAPPDATA%\Programs\Deep Code by C.Walia` otherwise
+
+Prefer clicking instead of typing:
+
+- Download **[INSTALL_FROM_GITHUB.cmd](https://raw.githubusercontent.com/Deepontheway/Deep-Code-by-C.Walia/main/INSTALL_FROM_GITHUB.cmd)** and double-click it
+- Or download the repo ZIP: [main.zip](https://github.com/Deepontheway/Deep-Code-by-C.Walia/archive/refs/heads/main.zip), extract it and run `FULL_SETUP_NO_PINOKIO.bat`
+
+Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps.
+
 ## Manual Installation Guide
 
-`ash
+```bash
 git clone https://github.com/Deepontheway/Deep-Code-by-C.Walia.git
 cd Deep-Code-by-C.Walia
 npm install --legacy-peer-deps
 npm run dev
-`
+```
 
 ## Usage Guide
 
