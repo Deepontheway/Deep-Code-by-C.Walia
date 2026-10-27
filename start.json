@@ -1,0 +1,21 @@
+{
+  "daemon": true,
+  "run": [
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "python -m uvicorn walia.main:app --host 127.0.0.1 --port 8765 --no-access-log",
+        "path": "app",
+        "venv": "venv",
+        "env": { "WALIACODE_HOME": "../data" },
+        "on": [
+          { "event": "WaliaCode listening at http://127\\.0\\.0\\.1:8765", "done": true }
+        ]
+      }
+    },
+    {
+      "method": "local.set",
+      "params": { "url": "http://127.0.0.1:8765" }
+    }
+  ]
+}
