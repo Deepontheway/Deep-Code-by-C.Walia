@@ -10,3 +10,4 @@ venv/
 app/venv/
 __pycache__/
 *.pyc
+install-manifest.json
