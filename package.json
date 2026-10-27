@@ -1,0 +1,26 @@
+﻿{
+  "name": "walia-code",
+  "version": "0.1.0",
+  "description": "Walia Code - Hybrid CLI autonomous coding agent (opencode + aider). Powered by qwen3-coder:14b and Big Pickle.",
+  "type": "module",
+  "bin": { "walia": "./bin/walia" },
+  "scripts": {
+    "dev": "tsx bin/walia",
+    "build": "tsc",
+    "start": "node dist/bin/walia.js"
+  },
+  "dependencies": {
+    "execa": "^9.0.0",
+    "ink": "^5.0.0",
+    "nodemailer": "^6.9.0",
+    "simple-git": "^3.25.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@types/react": "^18.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0"
+  }
+}

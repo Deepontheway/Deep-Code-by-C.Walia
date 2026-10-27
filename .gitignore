@@ -1,0 +1,7 @@
+﻿node_modules
+dist
+.env
+.walia
+*.log
+references
+.DS_Store
