@@ -1,0 +1,1 @@
+﻿export const LEGIT_TOOLS = ['web:scaffold','android:build','windows:tauri','godot:project','github:search-license','browser:automate','shell:run-approved','email:automate','image:generate','assistant:desktop'];
