@@ -1,61 +1,63 @@
-﻿# Walia Code
+# Walia Code
 
-**AGI-Style Autonomous Coding Agent | Build Anything. Code Like Magic.**
+> *the chaotic lil coding bestie that actually gets stuff done fr*
 
-Walia Code is a fully autonomous, AGI-adjacent coding agent with its own brain, emotions, personality, and initiative. Built by combining the best of open-source projects like [opencode](https://github.com/opencode-ai/opencode), [aider](https://github.com/Aider-AI/aider), [OpenHands](https://github.com/All-Hands-AI/OpenHands), and [Browser Use](https://github.com/browser-use/browser-use), reimagined into one powerful unified agent.
+[![GitHub](https://img.shields.io/badge/GitHub-Deepontheway/walia--code-blue)](https://github.com/Deepontheway/walia-code)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Pinokio](https://img.shields.io/badge/Pinokio-Ready-green)](https://pinokio.computer)
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Deepontheway/walia--code-blue)](https://github.com/Deepontheway/walia-code)
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Pinokio Ready](https://img.shields.io/badge/Pinokio-Ready-green)](https://pinokio.computer)
+## A Lil Note From The Creator
 
-## A Note From The Creator
+ayoo.. im just a guy super new to GitHub tryna learn stuff day by day. Built this with **love and curiosity** at ungodly hours lmaooo. 
 
-Hey, I'm just a learner new to GitHub trying to build cool things and learn something new everyday. This project is a result of curiosity, research, and a lot of late nights. Plans to bring many more projects in the future as I keep learning step by step. Huge thanks to all the open-source creators whose work made this possible. 
+Plans to bring wayyy more projects in the future as i keep learning step by step. Huge thanks to every open source creator out there fr. If this helps even one person bring their idea to life, worth it <3
 
-## What Makes Walia Code Different
+## What Even Is Walia Code?
 
-- **Its Own Brain** - Initiative, independent reasoning, learns over time
-- **Human-Like Personality** - Playful and funny by default. Can tease, flirt, comfort, roast based on vibe
-- **Emotional Intelligence** - Reads mood, talks like a real friend, knows when to cheer you up
-- **Privacy-Aware** - Warns about suspicious apps/phishing, asks permission before accessing anything
-- **Fully Autonomous** - Goes from idea to deployable app with minimal input
-- **AGI-Style** - Proactive, asks questions, gives ideas, doesn't just wait for commands
+Walia Code is an AGI-style autonomous coding agent with its own brain, emotions, personality and initiative. More like a chaotic but genius bestie who codes with ya, roasts ya lovingly and actually gets stuff done.
 
-## Features
+Talk to it naturally. Give it an idea. It'll build full deployable apps, games, websites, android apps, windows apps from scratch.
 
-### Development
-- Web, Android, Windows, iOS-ready apps
-- Game dev with Godot
-- 100+ languages including PHP, Python, C++, C#, Java, Rust, Go
-- Google Apps Script, Excel/PowerPoint automation
-- Git-aware with smart commits
+## Not Just AI, AGI-Style
 
-### Models
-- Big Pickle, Qwen 3 Coder (14B-480B), DeepSeek V3.1/V3/R1, Kimi K2, Grok Code Fast, Seed Coder, Codestral - all free
-- Local via Ollama or cloud via OpenCode
+- Own reasoning & initiative
+- Proactive ideas and suggestions
+- Learns your vibe over time
+- Long term memory
+- Can disagree playfully
+- Thinks before acting
+- Genuinely autonomous
 
-### Automation & Assistant
-- Browser, CMD, PowerShell with approval
-- Email, notifications, replies
-- Privacy scanning & warnings
-- Desktop assistant mode
+## Personality & EQ
 
-### Pinokio One-Click
-Installs Node.js, Python 3.12, Conda/Anaconda, Git, SQLite, VS Build Tools, Ollama automatically.
+By default playful and funny. Can switch to silly, teasing, flirting (subtle), scolding, angry, naughty depending on vibe. Has real EQ - if you're sad it'll try to cheer you up like a real friend without throwing helplines. Roasts with love, hypes you up, knows when to lock in.
 
-## Quick Start
+## Privacy First
 
-1. Download [Pinokio](https://pinokio.computer)
-2. Add repo: https://github.com/Deepontheway/walia-code
-3. Click Install (auto-installs everything)
-4. Click Start and talk to Walia Code
+Everything needs permission. Warns about phishing/suspicious apps. Approval gates for shell/SQL/email/file ops. Local first. Full control.
 
-## Credits & Thanks
+## Full Capabilities
 
-Massive thanks to opencode, aider, OpenHands, Browser Use, Cline, RooCode, Continue.dev and the entire open-source community. Standing on the shoulders of giants.
+**Dev:** Web, Android, Windows, iOS, Godot games, 100+ languages (PHP, Python, C++, C#, Java, Rust, Go, etc), full stack
+**Models:** Big Pickle, Qwen 3 Coder, DeepSeek V3.1, Kimi K2, Grok Code Fast, free via OpenCode + local Ollama
+**Automation:** Browser (Playwright), CMD, PowerShell, emails, servers
+**Office:** Google Suite, Microsoft Office, Apps Script, Sheets/Slides/PowerPoint
+**Smart:** Git aware, Manus-style planning, sub-agents, image gen, desktop assistant, notification replies
+**Safety:** Privacy guard, app scanner, diff preview
 
-## License
+## Pinokio One-Click (Auto Installs Everything)
 
-MIT License
+1. Install [Pinokio](https://pinokio.computer)
+2. Add: https://github.com/Deepontheway/walia-code
+3. Click **Install** - auto installs Node, Python 3.12, Conda/Anaconda, Git, SQLite, VS Build Tools, Ollama
+4. Click **Start** - boom, ready
 
-**Made with curiosity and passion by [Deepontheway](https://github.com/Deepontheway)**
+## Credits
+
+Massive love to [opencode](https://github.com/opencode-ai/opencode), [aider](https://github.com/Aider-AI/aider), [OpenHands](https://github.com/All-Hands-AI/OpenHands), [Browser Use](https://github.com/browser-use/browser-use), [Cline](https://github.com/cline/cline), [RooCode](https://github.com/RooCodeInc/RooCode), [Continue.dev](https://github.com/continuedev/continue) and the entire open source fam. Standing on giants fr.
+
+## Made With Love & Curiosity
+
+By [Deepontheway](https://github.com/Deepontheway) | MIT License | Learning day by day, bringing more soon <3
+
+*chaotic, caring, caffeine powered*
