@@ -358,12 +358,12 @@ Deep Code by C.Walia was made with **love and curiosity** through countless late
 
 To whoever uses this - I hope it makes building fun again. I hope it gives you confidence to bring that idea to life. I hope it feels like building with a friend.
 
-Go build something stupidly cool, something weird, something only YOU would build. Deep Code by C.Walia got your chaotic lil self fr ??
+Go build something stupidly cool, something weird, something only YOU would build. 
 
-*chai fueled  music blasting  chaotic  caring  caffeine powered  still learning  made straight from the heart*
+*chai fueled  music blasting  chaotic  caring  caffeine powered  still learning  made straight from the heart*
 
 ## License
 
-**MIT License** © 2025 [C.Walia](https://github.com/Deepontheway)
+**MIT License** © 2026 [C.Walia](https://github.com/Deepontheway)
 
-Free to use, modify, distribute. Just spread the love ?
+Free to use, modify, distribute. Just spread the love 
