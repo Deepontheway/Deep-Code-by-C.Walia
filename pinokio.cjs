@@ -3,7 +3,6 @@ module.exports = {
   title: "Deep Code by C. Walia",
   description: "AGI-style autonomous coding agent by C.Walia - build apps, games, automate everything",
   icon: "icon.png",
-  image: "icon.png",
   menu: async (kernel, info) => {
     const installed = info.exists("node_modules");
     const running = info.running("pinokio/start.json");
