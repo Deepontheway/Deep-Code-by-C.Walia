@@ -1,0 +1,9 @@
+{
+  "title": "WaliaCode",
+  "description": "Independent, local-first coding and personal agent. Review every browser, email, and command action.",
+  "icon": "icon.svg",
+  "links": [
+    { "title": "Project license", "value": "LICENSE" },
+    { "title": "Security model", "value": "SECURITY.md" }
+  ]
+}
