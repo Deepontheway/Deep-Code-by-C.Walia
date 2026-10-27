@@ -11,11 +11,11 @@
 
 ayoo ??
 
-Im just a guy super new to GitHub tryna learn stuff day by day. Built **Deep Code by C.Walia** with pure love and curiosity at ungodly hours lmaooo.
+Im just a guy super new to GitHub tryna learn stuff day by day. Built Deep Code by C.Walia with pure love and curiosity at ungodly hours lmaooo.
 
 Plans to bring wayyy more projects in the future as i keep learning step by step. Huge thanks to all open source creators. If this helps bring your idea to life, means more than you know <3
 
-## What Is Deep Code by C.Walia?
+## What Is Deep Code by C.Walia
 
 AGI-style autonomous coding agent with its own brain, emotions, personality and initiative. More like your chaotic lil coding bestie that codes with ya, roasts ya lovingly and actually gets stuff done.
 
@@ -23,28 +23,28 @@ Builds full deployable apps, games, websites, Android apps, Windows apps from na
 
 ## Features
 
-- AGI-style brain with initiative & reasoning
-- Dynamic personality (playful, teasing, caring, chaotic)
-- Emotional intelligence - acts like a real friend
+- AGI-style brain with initiative and reasoning
+- Dynamic personality
+- Emotional intelligence
 - 100+ languages
-- Free high-end models (Big Pickle, Qwen, DeepSeek, Kimi, Grok)
-- App/Web/Android/Windows/Game dev + Godot
-- Browser/CMD/PowerShell automation
-- Google Suite + MS Office + Apps Script
+- Free high-end models
+- App, Web, Android, Windows, Game dev with Godot
+- Browser, CMD, PowerShell automation
+- Google Suite, Microsoft Office, Apps Script
 - Git aware, Manus-style planning, sub-agents
 - Privacy-aware with approval gates
-- Image gen, desktop assistant, smart suggestions
+- Image generation, desktop assistant, smart suggestions
 - Pinokio one-click auto installs everything
 
 ## Pinokio Install
 
 1. Install [Pinokio](https://pinokio.computer)
 2. Add repo: https://github.com/Deepontheway/walia-code
-3. Click Install (auto installs Node, Python 3.12, Conda/Anaconda, Git, SQLite, VS Build Tools, Ollama)
+3. Click Install
 4. Click Start
 
 ## Credits
 
-Massive thanks to opencode, aider, OpenHands, Browser Use, Cline, RooCode, Continue.dev and entire open source fam.
+Massive thanks to opencode, aider, OpenHands, Browser Use, Cline, RooCode, Continue.dev and the entire open source fam.
 
-**Made with love and curiosity by C.Walia | Learning day by day | MIT License**
+Made with love and curiosity by C.Walia | Learning day by day | MIT License
