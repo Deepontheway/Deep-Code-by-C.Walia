@@ -1,0 +1,12 @@
+{
+  "run": [
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "python -m pip install --upgrade pip && python -m pip install -r requirements.txt",
+        "path": "app",
+        "venv": "venv"
+      }
+    }
+  ]
+}
