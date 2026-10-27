@@ -1,0 +1,13 @@
+﻿{
+  "run": [
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Starting Walia Code CLI",
+        "path": "{{self}}",
+        "command": "npm run dev",
+        "terminal": true
+      }
+    }
+  ]
+}

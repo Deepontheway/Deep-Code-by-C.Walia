@@ -1,0 +1,12 @@
+﻿{
+  "run": [
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Updating dependencies",
+        "path": "{{self}}",
+        "command": "npm install"
+      }
+    }
+  ]
+}

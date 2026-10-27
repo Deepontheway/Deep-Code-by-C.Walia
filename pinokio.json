@@ -1,9 +1,10 @@
-{
-  "title": "WaliaCode",
-  "description": "Independent, local-first coding and personal agent. Review every browser, email, and command action.",
-  "icon": "icon.svg",
-  "links": [
-    { "title": "Project license", "value": "LICENSE" },
-    { "title": "Security model", "value": "SECURITY.md" }
+﻿{
+  "title": "Walia Code",
+  "description": "Hybrid CLI autonomous coding agent (opencode + aider). Powered by qwen3-coder:14b & Big Pickle. Build full apps with CMD/PowerShell/SQL/Email and approval gate.",
+  "icon": "icon.png",
+  "menu": [
+    { "text": "Install", "href": "pinokio/install.json" },
+    { "text": "Start", "href": "pinokio/start.json" },
+    { "text": "Update", "href": "pinokio/update.json" }
   ]
 }
