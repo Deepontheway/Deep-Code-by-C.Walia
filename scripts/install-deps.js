@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { platform } from 'os';
@@ -8,7 +8,7 @@ function run(cmd) {
   try { execSync(cmd, { stdio: 'inherit' }); } catch(e) { console.log('warn:', e.message); }
 }
 
-console.log('Walia Code - Dependency Installer');
+console.log('Deep Code by C.Walia - Dependency Installer');
 console.log('Platform:', platform());
 
 if (platform() === 'win32') {
