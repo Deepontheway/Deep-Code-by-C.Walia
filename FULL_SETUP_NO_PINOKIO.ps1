@@ -11,6 +11,7 @@ param(
     [switch]$NoShortcuts,
     [switch]$NoRegistry,
     [switch]$LocalModels,
+    [switch]$NoLocalModels,
     [ValidateSet("auto", "github", "opencode", "openrouter", "custom", "none")]
     [string]$Provider = "auto",
     [string]$ApiKey,
@@ -298,6 +299,47 @@ if (-not $DataDir) {
     $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia"
 }
 
+$localModelsEnabled = [bool]$LocalModels
+if (-not $LocalModels -and -not $NoLocalModels -and [Environment]::UserInteractive -and -not $env:WALIA_NO_POPUP) {
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $popupText = @"
+Download AI models locally too?
+
+Big Pickle and other cloud models already work online over the internet. They do not need to be downloaded.
+
+Choose Yes to also install Ollama and download these local models:
+  - qwen3-coder:14b (about 9 GB)
+  - qwen2.5-coder:32b (about 20 GB)
+  - deepseek-coder-v2:16b (about 9 GB)
+
+Total: about 38 GB. On a slow connection this can take hours.
+
+Choose No to use online models only. You can add local models later by running this setup again with -LocalModels.
+"@
+        $answer = [System.Windows.Forms.MessageBox]::Show(
+            $popupText,
+            "Deep Code by C.Walia - Optional local models",
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Question,
+            [System.Windows.Forms.MessageBoxDefaultButton]::Button2
+        )
+        $localModelsEnabled = ($answer -eq [System.Windows.Forms.DialogResult]::Yes)
+    } catch {
+        Write-Host "Local-model popup unavailable. Using online models only." -ForegroundColor Yellow
+        $localModelsEnabled = $false
+    }
+}
+if ($LocalModels -and $NoLocalModels) {
+    Write-Host "Both -LocalModels and -NoLocalModels were passed. Using -LocalModels." -ForegroundColor Yellow
+    $localModelsEnabled = $true
+}
+if ($localModelsEnabled) {
+    Write-Step "Local models selected - Ollama and model downloads will be installed." "Yellow"
+} else {
+    Write-Step "Online model mode selected - no local model downloads." "Green"
+}
+
 Write-Step "Source repo: $RepoRoot"
 Write-Step "Install folder: $InstallDir"
 Write-Step "App data folder: $DataDir"
@@ -397,7 +439,7 @@ if (-not $SkipWinget) {
             $newWinget.Add("Microsoft.VisualStudio.2022.BuildTools")
         }
 
-        if ($LocalModels) {
+        if ($localModelsEnabled) {
             Write-Host "`n[7/7] Ollama (local models requested)" -ForegroundColor Green
             if (Install-WingetManaged "Ollama.Ollama" "Ollama" 44 48 180) { $newWinget.Add("Ollama.Ollama") }
         } else {
@@ -518,7 +560,7 @@ $providerModel = $null
 $providerKey = $null
 $providerLabel = "not configured"
 
-if ($LocalModels) {
+if ($localModelsEnabled) {
     Write-Step "Local models requested - preparing Ollama..."
     if (-not (Test-Command "ollama")) {
         Write-Host "Ollama is not installed. Install it with: winget install --id Ollama.Ollama -e" -ForegroundColor Yellow
@@ -758,7 +800,7 @@ $manifest = [ordered]@{
     ModelProvider            = $providerLabel
     ModelBaseUrl             = $providerBaseUrl
     ModelName                = $providerModel
-    LocalModels              = [bool]$LocalModels
+    LocalModels              = [bool]$localModelsEnabled
     WingetPackagesInstalled  = (Merge-Unique $oldWinget $newWinget)
     OllamaModels             = (Merge-Unique $oldModels $newModels)
     Shortcuts                = (Merge-Unique $oldShortcuts $newShortcuts)
@@ -788,8 +830,12 @@ Write-Host "Start:        Deep Code by C.Walia.lnk (Desktop / Start Menu)" -Fore
 Write-Host "Uninstall:    Uninstall.cmd in the install folder, Start Menu," -ForegroundColor Cyan
 Write-Host "              or Windows Settings > Apps" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "The AI runs online through your internet connection. No local model" -ForegroundColor DarkGray
-Write-Host "files are downloaded unless you explicitly pass -LocalModels." -ForegroundColor DarkGray
+if ($localModelsEnabled) {
+    Write-Host "Local models were enabled in addition to online models." -ForegroundColor DarkGray
+} else {
+    Write-Host "The AI runs online through your internet connection. No local model" -ForegroundColor DarkGray
+    Write-Host "files were downloaded. Run setup with -LocalModels to add them later." -ForegroundColor DarkGray
+}
 
 if ($InstallOnly) {
     Write-Host "`nInstallOnly specified. Exiting."

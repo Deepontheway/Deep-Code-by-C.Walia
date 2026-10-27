@@ -293,7 +293,7 @@ Blends the finest parts of [opencode](https://github.com/opencode-ai/opencode), 
 
 ## Direct Install From GitHub
 
-No clone. No Pinokio. One command downloads the latest source from GitHub, installs every dependency, connects an online AI model over your internet connection, creates shortcuts and registers an uninstaller. It does **not** download local model files unless you ask it to.
+No clone. No Pinokio. One command downloads the latest source from GitHub, installs every dependency, connects an online AI model over your internet connection, creates shortcuts and registers an uninstaller. During setup a popup asks whether you also want local models; choosing **No** (the default) downloads none.
 
 Open **PowerShell** and run:
 
@@ -321,7 +321,10 @@ Pick a provider during setup, or pass it up front:
 | GitHub Models | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider github` | Reuses your `gh auth login` token, default `openai/gpt-4o-mini` |
 | OpenRouter | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider openrouter -ApiKey <key>` | Free key at https://openrouter.ai/keys |
 | Custom | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider custom -BaseUrl https://host/v1 -Model name -ApiKey <key>` | Any OpenAI-compatible HTTPS endpoint |
-| Local (opt-in) | `.\FULL_SETUP_NO_PINOKIO.ps1 -LocalModels` | Installs Ollama and pulls Qwen/DeepSeek models, several GB |
+| Local (opt-in) | `.\FULL_SETUP_NO_PINOKIO.ps1 -LocalModels` | Popup asks Yes/No; Yes installs Ollama and pulls Qwen/DeepSeek models, about 38 GB |
+| Online only | `.\FULL_SETUP_NO_PINOKIO.ps1 -NoLocalModels` | Skips the popup and never downloads local models |
+
+Big Pickle and the other cloud models run online and are never downloaded. Local copies available through Ollama are Qwen3 Coder 14B, Qwen2.5 Coder 32B, and DeepSeek Coder V2 16B.
 
 API keys are stored in Windows Credential Manager, never in the repo. You can change the provider, model, workspace, or key any time from **Settings** in the app. Chat history and config live in `%LOCALAPPDATA%\Deep Code by C.Walia`.
 

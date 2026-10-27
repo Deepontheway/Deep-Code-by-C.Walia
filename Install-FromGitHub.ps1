@@ -9,6 +9,7 @@ param(
     [switch]$DownloadOnly,
     [switch]$NoLaunch,
     [switch]$LocalModels,
+    [switch]$NoLocalModels,
     [ValidateSet("auto", "github", "opencode", "openrouter", "custom", "none")]
     [string]$Provider = "auto",
     [string]$ApiKey,
@@ -167,6 +168,7 @@ try {
     $forward = @("-InstallOnly")
     if ($SkipWinget) { $forward += "-SkipWinget" }
     if ($LocalModels) { $forward += "-LocalModels" }
+    if ($NoLocalModels) { $forward += "-NoLocalModels" }
     if ($Provider) { $forward += @("-Provider", $Provider) }
     if ($ApiKey) { $forward += @("-ApiKey", $ApiKey) }
     if ($BaseUrl) { $forward += @("-BaseUrl", $BaseUrl) }
