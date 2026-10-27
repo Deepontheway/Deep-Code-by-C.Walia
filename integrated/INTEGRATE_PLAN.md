@@ -1,0 +1,1 @@
+﻿Clone and integrate the best parts from existing repos to make Walia Code as perfect as possible. Study opencode, aider, OpenHands, Browser Use, Cline, RooCode patterns. Adapt to our AGI-style personality and features. Keep everything rebranded as Walia Code.
