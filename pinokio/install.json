@@ -3,25 +3,49 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "Installing all dependencies",
+        "message": "Installing Node.js and core tools via winget",
         "path": "{{self}}",
-        "command": "npm install --legacy-peer-deps"
+        "command": "winget install --id OpenJS.NodeJS.LTS -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done; winget install --id Git.Git -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done; winget install --id Python.Python.3.12 -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done"
       }
     },
     {
       "method": "shell.run",
       "params": {
-        "message": "Running dependency setup",
+        "message": "Installing Conda/Miniconda",
         "path": "{{self}}",
-        "command": "node scripts/install-deps.js 2>&1 || echo 'Setup completed'"
+        "command": "winget install --id Anaconda.Miniconda3 -e --accept-package-agreements --accept-source-agreements 2>&1 || winget install --id Anaconda.Anaconda3 -e --accept-package-agreements --accept-source-agreements 2>&1 || echo 'conda install skipped'"
       }
     },
     {
       "method": "shell.run",
       "params": {
-        "message": "Downloading recommended models",
+        "message": "Installing SQLite and dev tools",
         "path": "{{self}}",
-        "command": "ollama pull qwen3-coder:14b 2>&1; ollama pull deepseek-coder-v2 2>&1; ollama pull qwen2.5-coder:14b 2>&1 || echo 'Models will download on first use'"
+        "command": "winget install --id SQLite.SQLite -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done; winget install --id Microsoft.VisualStudio.2022.BuildTools -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Installing Ollama",
+        "path": "{{self}}",
+        "command": "winget install --id Ollama.Ollama -e --accept-package-agreements --accept-source-agreements 2>&1 || echo done"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Installing npm dependencies",
+        "path": "{{self}}",
+        "command": "npm install --legacy-peer-deps 2>&1 || echo done"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Pulling recommended models",
+        "path": "{{self}}",
+        "command": "ollama pull qwen3-coder:14b 2>&1 || echo models will download later"
       }
     }
   ]

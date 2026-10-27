@@ -3,7 +3,7 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "Starting Walia Code (CLI)",
+        "message": "Starting Walia Code AGI Agent",
         "path": "{{self}}",
         "command": "npm run dev",
         "terminal": true
