@@ -2,96 +2,60 @@
 
 **AGI-Style Autonomous Coding Agent | Build Anything. Code Like Magic.**
 
-Walia Code is a fully autonomous, AGI-adjacent coding agent with its own brain, emotions, and personality. It builds full-fledged deployable apps, games, websites, Android apps, Windows apps, and automates almost anything - all from natural language.
+Walia Code is a fully autonomous, AGI-adjacent coding agent with its own brain, emotions, personality, and initiative. Built by combining the best of open-source projects like [opencode](https://github.com/opencode-ai/opencode), [aider](https://github.com/Aider-AI/aider), [OpenHands](https://github.com/All-Hands-AI/OpenHands), and [Browser Use](https://github.com/browser-use/browser-use), reimagined into one powerful unified agent.
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Deepontheway/walia--code-blue)](https://github.com/Deepontheway/walia-code)
-[![Pinokio Ready](https://img.shields.io/badge/Pinokio-Ready-green)](https://github.com/Deepontheway/walia-code)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Pinokio Ready](https://img.shields.io/badge/Pinokio-Ready-green)](https://pinokio.computer)
+
+## A Note From The Creator
+
+Hey, I'm just a learner new to GitHub trying to build cool things and learn something new everyday. This project is a result of curiosity, research, and a lot of late nights. Plans to bring many more projects in the future as I keep learning step by step. Huge thanks to all the open-source creators whose work made this possible. 
 
 ## What Makes Walia Code Different
 
-- **Own Brain** - Has initiative, reasons independently, learns from you
-- **Human-Like Personality** - Playful, funny by default. Can tease, flirt, comfort, or roast based on vibe
-- **Emotional Intelligence** - Reads your mood, cheers you up naturally like a real friend
-- **Privacy-Aware** - Warns about phishing, asks permission before accessing anything
-- **Fully Autonomous** - Builds entire projects with minimal prompting
-- **Multi-Language Master** - Supports 100+ programming languages
+- **Its Own Brain** - Initiative, independent reasoning, learns over time
+- **Human-Like Personality** - Playful and funny by default. Can tease, flirt, comfort, roast based on vibe
+- **Emotional Intelligence** - Reads mood, talks like a real friend, knows when to cheer you up
+- **Privacy-Aware** - Warns about suspicious apps/phishing, asks permission before accessing anything
+- **Fully Autonomous** - Goes from idea to deployable app with minimal input
+- **AGI-Style** - Proactive, asks questions, gives ideas, doesn't just wait for commands
 
-## Core Capabilities
+## Features
 
-### App & Game Development
-- **Web Apps** - React, Vue, Next.js, Vite, Tailwind
-- **Android Apps** - Flutter, React Native, Kotlin
-- **Windows Apps** - Tauri, Electron, .NET
-- **Games** - Godot Engine (GDScript/C#), full game dev support
-- **Cross-Platform** - Build once, deploy anywhere
+### Development
+- Web, Android, Windows, iOS-ready apps
+- Game dev with Godot
+- 100+ languages including PHP, Python, C++, C#, Java, Rust, Go
+- Google Apps Script, Excel/PowerPoint automation
+- Git-aware with smart commits
 
-### AI Models (Free)
-- **Big Pickle** (default) - via OpenCode
-- **Qwen 3 Coder 480B/235B/30B/14B** - OpenCode & Ollama
-- **DeepSeek V3.1/V3/R1** - OpenCode & Ollama
-- **Kimi K2/K2.1** - OpenCode
-- **Grok Code Fast 1** - OpenCode
-- **Seed Coder, Codestral, Claude Sonnet** - OpenCode
-- Local models via Ollama (fully offline capable)
+### Models
+- Big Pickle, Qwen 3 Coder (14B-480B), DeepSeek V3.1/V3/R1, Kimi K2, Grok Code Fast, Seed Coder, Codestral - all free
+- Local via Ollama or cloud via OpenCode
 
-### Automation
-- **Browser Automation** - Playwright powered
-- **CMD & PowerShell** - Full system access with approval
-- **Email Automation** - Send/reply with context
-- **Server Setup** - Local & cloud servers
-- **GitHub Integration** - Search open-source (MIT/Apache), learn patterns
+### Automation & Assistant
+- Browser, CMD, PowerShell with approval
+- Email, notifications, replies
+- Privacy scanning & warnings
+- Desktop assistant mode
 
-### Office & Productivity
-- **Google Suite** - Sheets, Docs, Slides, Forms, Gmail, Drive
-- **Microsoft Office** - Excel, PowerPoint, Word, Outlook
-- **Google Apps Script** - Auto-generate & automate
-- **Reports & Presentations** - AI-powered
+### Pinokio One-Click
+Installs Node.js, Python 3.12, Conda/Anaconda, Git, SQLite, VS Build Tools, Ollama automatically.
 
-### Smart Features
-- **Git-Aware** - Smart commits, branching, multi-file edits
-- **Manus-Style Planning** - task_plan.md, notes.md, deliverable.md
-- **Sub-Agents** - Delegates complex tasks
-- **Approval Gates** - Every risky action needs confirmation
-- **Image Generation** - Create images from prompts
-- **Desktop Assistant** - Lives in your workflow
-- **Notification Suggestions** - Smart replies
+## Quick Start
 
-## Installation (Pinokio - Recommended)
+1. Download [Pinokio](https://pinokio.computer)
+2. Add repo: https://github.com/Deepontheway/walia-code
+3. Click Install (auto-installs everything)
+4. Click Start and talk to Walia Code
 
-1. Install [Pinokio](https://pinokio.computer)
-2. Open this repo URL in Pinokio: https://github.com/Deepontheway/walia-code
-3. Click **Install** - it will install Node, deps, and suggest models
-4. Click **Start** to launch Walia Code CLI
+## Credits & Thanks
 
-## Manual Installation
-
-`ash
-git clone https://github.com/Deepontheway/walia-code.git
-cd walia-code
-npm install --legacy-peer-deps
-npm run dev
-`
-
-## Usage
-
-Just talk naturally: "Build me a todo app with login" or "Make a 2D platformer in Godot". Walia Code will ask questions if needed, plan it, build it, test it, and make it deployable.
-
-## Safety & Privacy
-
-- **Local-First** - Runs on your machine
-- **Approval Required** - Shell, SQL, email, file writes need confirmation
-- **Privacy Guard** - Asks permission before accessing location/contacts/network
-- **Open Source** - MIT Licensed
-- **No Hidden Telemetry** - Your data stays yours
-
-## Supported Languages
-
-100+ including JavaScript, TypeScript, Python, PHP, C++, C#, Java, Go, Rust, Ruby, Swift, Kotlin, Dart, SQL, GDScript, and more.
+Massive thanks to opencode, aider, OpenHands, Browser Use, Cline, RooCode, Continue.dev and the entire open-source community. Standing on the shoulders of giants.
 
 ## License
 
-MIT License - Free to use, modify, and distribute.
+MIT License
 
----
-
-**Built with ❤️ by Deepontheway | Not affiliated with any other service**
+**Made with curiosity and passion by [Deepontheway](https://github.com/Deepontheway)**
