@@ -2,10 +2,10 @@
 
 > *\"the chaotic lil coding bestie that actually gets stuff done fr\"*
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Deepontheway/deep--code--by--cwalia-black?style=for-the-badge&logo=github)](https://github.com/Deepontheway/deep-code-by-cwalia)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Deepontheway/walia--code-black?style=for-the-badge&logo=github)](https://github.com/Deepontheway/walia-code)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![Pinokio Ready](https://img.shields.io/badge/Pinokio-Ready-green?style=for-the-badge)](https://pinokio.computer)
-[![Made with Love & Curiosity](https://img.shields.io/badge/Made%20with-Love%20%26%20Curiosity-pink?style=for-the-badge)](https://github.com/Deepontheway/deep-code-by-cwalia)
+[![Made with Love & Curiosity](https://img.shields.io/badge/Made%20with-Love%20%26%20Curiosity-pink?style=for-the-badge)](https://github.com/Deepontheway/walia-code)
 
 ## A Lil Note From The Creator
 
@@ -39,7 +39,7 @@ Builds full deployable apps, games, websites, Android apps, Windows apps from na
 ## Pinokio Install
 
 1. Install [Pinokio](https://pinokio.computer)
-2. Add repo: https://github.com/Deepontheway/deep-code-by-cwalia
+2. Add repo: https://github.com/Deepontheway/walia-code
 3. Click Install (auto installs Node, Python 3.12, Conda/Anaconda, Git, SQLite, VS Build Tools, Ollama)
 4. Click Start
 
