@@ -1,10 +1,10 @@
-﻿{
-  "title": "Walia Code",
-  "description": "Hybrid CLI autonomous coding agent (opencode + aider). Powered by qwen3-coder:14b & Big Pickle. Build full apps with CMD/PowerShell/SQL/Email and approval gate.",
-  "icon": "icon.png",
-  "menu": [
-    { "text": "Install", "href": "pinokio/install.json" },
-    { "text": "Start", "href": "pinokio/start.json" },
-    { "text": "Update", "href": "pinokio/update.json" }
+{
+  \"title\": \"Deep Code by C.Walia\",
+  \"description\": \"AGI-style autonomous coding agent by C.Walia - build apps, games, automate everything\",
+  \"icon\": \"icon.png\",
+  \"menu\": [
+    { \"text\": \"Install\", \"href\": \"pinokio/install.json\" },
+    { \"text\": \"Start\", \"href\": \"pinokio/start.json\" },
+    { \"text\": \"Update\", \"href\": \"pinokio/update.json\" }
   ]
 }

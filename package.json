@@ -1,9 +1,9 @@
-﻿{
-  "name": "walia-code",
+{
+  "name": "deep-code-by-cwalia",
   "version": "0.1.0",
-  "description": "Walia Code - Hybrid CLI autonomous coding agent (opencode + aider). Powered by qwen3-coder:14b and Big Pickle.",
+  "description": "Deep Code by C.Walia - AGI-style autonomous coding agent",
   "type": "module",
-  "bin": { "walia": "./bin/walia" },
+  "bin": { "deepcode": "./bin/walia" },
   "scripts": {
     "dev": "tsx bin/walia",
     "build": "tsc",
