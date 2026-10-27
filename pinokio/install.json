@@ -3,17 +3,25 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "Installing dependencies...",
+        "message": "Installing Node dependencies",
         "path": "{{self}}",
-        "command": "npm install"
+        "command": "npm install --legacy-peer-deps"
       }
     },
     {
       "method": "shell.run",
       "params": {
-        "message": "Pulling qwen3-coder:14b via Ollama (if available)...",
+        "message": "Installing system dependencies (winget)",
         "path": "{{self}}",
-        "command": "ollama pull qwen3-coder:14b 2>&1 || echo 'Ollama not found, will use Big Pickle'"
+        "command": "node scripts/install-deps.js 2>&1 || echo done"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "Pulling qwen3-coder:14b",
+        "path": "{{self}}",
+        "command": "ollama pull qwen3-coder:14b 2>&1 || echo 'Ollama not ready yet'"
       }
     }
   ]
