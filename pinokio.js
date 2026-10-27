@@ -6,7 +6,7 @@ module.exports = {
   image: "icon.png",
   menu: async (kernel, info) => {
     const installed = info.exists("node_modules");
-    the meetings were held
+    const running = info.running("pinokio/start.json");
     if (!installed) {
       return [{ icon: "fa-solid fa-download", text: "Install Deep Code by C. Walia", href: "pinokio/install.json" }];
     }
