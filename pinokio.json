@@ -1,7 +1,7 @@
 {
   \"title\": \"Deep Code by C. Walia\",
   \"description\": \"AGI-style autonomous coding agent by C.Walia - build apps, games, automate everything\",
-  \"icon\": \"icon.jpg\",
+  \"icon\": \"icon.png\",
   \"menu\": [
     { \"text\": \"Install\", \"href\": \"pinokio/install.json\" },
     { \"text\": \"Start\", \"href\": \"pinokio/start.json\" },
