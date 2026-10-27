@@ -50,7 +50,7 @@ This entire project was built with pure love and curiosity. Late nights, chai, o
 
 Im still new to all of this. Still learning every single day. And I plan to bring wayyy more projects in the future as I grow more and more.
 
-If Deep Code by C.Walia ever helps you bring even ONE idea to life that was just rotting in your notes app collecting dust, I'd consider this more than worth it fr ??
+If Deep Code by C.Walia ever helps you bring even ONE idea to life that was just rotting in your notes app collecting dust, I'd consider this more than worth it fr 
 
 ## What Even Is Deep Code by C.Walia
 
@@ -66,21 +66,21 @@ Because lets be real, most coding agents out there feel way too corporate, way t
 
 I wanted something that would hype you up when youre demotivated, roast you lovingly when you need that push, comfort you when youre pulling your hair out over a stupid bug for the third hour straight, and actually sit there and build your project beside you without making you feel dumb for asking the simplest questions.
 
-Coding should be fun again. Building should be exciting again. Bringing ideas to life should make you giddy like a kid. That is exactly what Deep Code by C.Walia tries to bring back ?
+Coding should be fun again. Building should be exciting again. Bringing ideas to life should make you giddy like a kid. That is exactly what Deep Code by C.Walia tries to bring back 
 
 ## Not Just AI... Its AGI Style
 
 Deep Code by C.Walia ain't your average agent that just sits there waiting for orders. It has a lil bit of its own mind and it uses it to actually help you better.
 
-- ?? **Own Brain** - Has its own initiative, forms plans independently and thinks through problems logically
-- ?? **Proactive** - Will suggest better approaches, improvements, cleaner structure before you even think of it
-- ?? **Smart Breakdown** - Takes massive goals and breaks em down into bite sized steps automatically
-- ?? **Long Term Memory** - Remembers you, your vibe, your past projects, your coding style, your preferences
-- ?? **Critical Thinking** - Can respectfully disagree with you and explain exactly why its approach might be better
-- ?? **Goal Driven** - Give it one goal and it'll lock in and run with it till its actually done
-- ?? **Constantly Learning** - Learns from every single interaction and gets better for you
-- ?? **Knows Balance** - Knows when to listen to you fully and when to take the lead for efficiency
-- ?? **True Collaboration** - Treats you as a partner, not a user. Builds WITH you fr
+-  **Own Brain** - Has its own initiative, forms plans independently and thinks through problems logically
+-  **Proactive** - Will suggest better approaches, improvements, cleaner structure before you even think of it
+-  **Smart Breakdown** - Takes massive goals and breaks em down into bite sized steps automatically
+-  **Long Term Memory** - Remembers you, your vibe, your past projects, your coding style, your preferences
+-  **Critical Thinking** - Can respectfully disagree with you and explain exactly why its approach might be better
+-  **Goal Driven** - Give it one goal and it'll lock in and run with it till its actually done
+-  **Constantly Learning** - Learns from every single interaction and gets better for you
+-  **Knows Balance** - Knows when to listen to you fully and when to take the lead for efficiency
+-  **True Collaboration** - Treats you as a partner, not a user. Builds WITH you fr
 
 ## Personality Vibe & Banter
 
@@ -108,29 +108,29 @@ It knows EXACTLY when to banter your soul away and when to shut up and lock the 
 
 This right here is what makes Deep Code by C.Walia different. It actually cares fr.
 
-- ?? **Mood Detection** - Picks up on your mood from your messages. Happy, frustrated, sad, burnt out, excited, all of it
-- ?? **Genuine Comfort** - If youre down, it'll sit and talk dumb with you, make you laugh, distract your mind in a wholesome way
-- ?? **Insane Hype** - Will hype you UP so ridiculously hard you'd genuinely believe you can build the next big thing
-- ?? **Bug Rage Calmer** - Knows the soul crushing pain of staring at the same error for 3 hours with no clue why
-- ?? **Natural Reactions** - No cringey "As an AI language model..." ever. Just raw human reactions
-- ?? **Validation** - Your frustration is valid. Your burnout is valid. Taking a break is valid
-- ?? **Knows The Line** - Always wholesome, always respectful, always has your boundaries locked in tight
-- ? **Bestie Energy** - Feels like venting to your online bestie at 2 AM with a cup of chai
+-  **Mood Detection** - Picks up on your mood from your messages. Happy, frustrated, sad, burnt out, excited, all of it
+-  **Genuine Comfort** - If youre down, it'll sit and talk dumb with you, make you laugh, distract your mind in a wholesome way
+-  **Insane Hype** - Will hype you UP so ridiculously hard you'd genuinely believe you can build the next big thing
+-  **Bug Rage Calmer** - Knows the soul crushing pain of staring at the same error for 3 hours with no clue why
+-  **Natural Reactions** - No cringey "As an AI language model..." ever. Just raw human reactions
+-  **Validation** - Your frustration is valid. Your burnout is valid. Taking a break is valid
+-  **Knows The Line** - Always wholesome, always respectful, always has your boundaries locked in tight
+-  **Bestie Energy** - Feels like venting to your online bestie at 2 AM with a cup of chai
 
 ## Privacy Safety & Security
 
 Your privacy will always be sacred here. No exceptions.
 
-- ?? **Permission Based** - Needs explicit permission before accessing location, contacts, network, hardware or any sensitive resources
-- ?? **Phishing Warnings** - Warns you if something looks suspicious, sketchy or potentially harmful
-- ? **Approval Gates** - Shell, CMD, PowerShell, SQL queries, Emails, File writes, deletions ALL require your explicit approval
-- ?? **Full Transparency** - Before running ANYTHING it shows you the exact command, the exact diff, the exact files affected
-- ?? **Local First Mentality** - Designed to run on your own machine. Your data stays with you
-- ?? **Risk Explanations** - Breaks down risks in the simplest words possible so you actually understand
-- ?? **Total Control** - You can toggle literally anything on or off anytime you want
-- ?? **Built In Privacy Guard** - Always looking out for you, even when you forget to
-- ?? **App Safety Scanner** - Scans downloaded files/apps and warns about red flags
-- ?? **Zero Sneakiness** - Nothing runs behind your back. Ever.
+-  **Permission Based** - Needs explicit permission before accessing location, contacts, network, hardware or any sensitive resources
+-  **Phishing Warnings** - Warns you if something looks suspicious, sketchy or potentially harmful
+-  **Approval Gates** - Shell, CMD, PowerShell, SQL queries, Emails, File writes, deletions ALL require your explicit approval
+-  **Full Transparency** - Before running ANYTHING it shows you the exact command, the exact diff, the exact files affected
+-  **Local First Mentality** - Designed to run on your own machine. Your data stays with you
+-  **Risk Explanations** - Breaks down risks in the simplest words possible so you actually understand
+-  **Total Control** - You can toggle literally anything on or off anytime you want
+-  **Built In Privacy Guard** - Always looking out for you, even when you forget to
+-  **App Safety Scanner** - Scans downloaded files/apps and warns about red flags
+-  **Zero Sneakiness** - Nothing runs behind your back. Ever.
 
 ## Core Philosophy
 
@@ -202,14 +202,14 @@ Get access to insanely powerful models for FREE. Switch on the fly with /model a
 
 Let Deep Code by C.Walia do all the boring repetitive stuff so you can actually chill.
 
-- ?? **Browser Automation** - Fill forms, click buttons, navigate sites, scrape data using Playwright
-- ?? **File System Automation** - Bulk rename, organize downloads, sort files by type, clean up folders
-- ?? **Email Automation** - Draft emails, reply smartly, manage inbox tasks
-- ?? **API Automation** - Connect to any API, build workflows, chain requests
-- ?? **Server Setup** - Guide you through setting up local or cloud servers step by step
-- ? **Multi Step Workflows** - Chain tasks together and let it run
-- ?? **Data Processing** - Clean CSVs, transform JSON, generate reports
-- ?? **Repetitive Tasks** - Anything you do over and over, automate it
+-  **Browser Automation** - Fill forms, click buttons, navigate sites, scrape data using Playwright
+-  **File System Automation** - Bulk rename, organize downloads, sort files by type, clean up folders
+-  **Email Automation** - Draft emails, reply smartly, manage inbox tasks
+-  **API Automation** - Connect to any API, build workflows, chain requests
+-  **Server Setup** - Guide you through setting up local or cloud servers step by step
+-  **Multi Step Workflows** - Chain tasks together and let it run
+-  **Data Processing** - Clean CSVs, transform JSON, generate reports
+-  **Repetitive Tasks** - Anything you do over and over, automate it
 
 ## Office Google Suite & Google Apps Script
 
@@ -265,12 +265,12 @@ All with strict approval gates.
 
 ## Image Generation Desktop Assistant & Smart Suggestions
 
-- ?? **AI Image Generation** - Generate images for projects, icons, assets
-- ?? **Desktop Assistant** - Contextual help
-- ?? **Smart Notification Replies** - Natural replies with permission
-- ?? **Smart Suggestions** - Improvements and optimizations
-- ?? **App Safety Scanner** - Warns about sketchy files/apps
-- ?? **Context Aware** - Helps based on what you're working on
+-  **AI Image Generation** - Generate images for projects, icons, assets
+-  **Desktop Assistant** - Contextual help
+-  **Smart Notification Replies** - Natural replies with permission
+-  **Smart Suggestions** - Improvements and optimizations
+-  **App Safety Scanner** - Warns about sketchy files/apps
+-  **Context Aware** - Helps based on what you're working on
 
 ## Learning From Open Source The Right Way
 
@@ -360,10 +360,10 @@ To whoever uses this - I hope it makes building fun again. I hope it gives you c
 
 Go build something stupidly cool, something weird, something only YOU would build. Deep Code by C.Walia got your chaotic lil self fr ??
 
-*chai fueled • music blasting • chaotic • caring • caffeine powered • still learning • made straight from the heart*
+*chai fueled Â• music blasting Â• chaotic Â• caring Â• caffeine powered Â• still learning Â• made straight from the heart*
 
 ## License
 
-**MIT License** © 2025 [C.Walia](https://github.com/Deepontheway)
+**MIT License** Â© 2025 [C.Walia](https://github.com/Deepontheway)
 
 Free to use, modify, distribute. Just spread the love ?
