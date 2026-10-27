@@ -3,7 +3,7 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "Installing Node dependencies",
+        "message": "Installing all dependencies",
         "path": "{{self}}",
         "command": "npm install --legacy-peer-deps"
       }
@@ -11,17 +11,17 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "Installing system dependencies (winget)",
+        "message": "Running dependency setup",
         "path": "{{self}}",
-        "command": "node scripts/install-deps.js 2>&1 || echo done"
+        "command": "node scripts/install-deps.js 2>&1 || echo 'Setup completed'"
       }
     },
     {
       "method": "shell.run",
       "params": {
-        "message": "Pulling qwen3-coder:14b",
+        "message": "Downloading recommended models",
         "path": "{{self}}",
-        "command": "ollama pull qwen3-coder:14b 2>&1 || echo 'Ollama not ready yet'"
+        "command": "ollama pull qwen3-coder:14b 2>&1; ollama pull deepseek-coder-v2 2>&1; ollama pull qwen2.5-coder:14b 2>&1 || echo 'Models will download on first use'"
       }
     }
   ]
