@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Code by C.Walia</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-2: #1c2330;
+  --border: #2b3443;
+  --text: #e6edf3;
+  --muted: #8b98a9;
+  --accent: #58a6ff;
+  --accent-2: #2f81f7;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+header .brand { font-weight: 600; letter-spacing: .2px; }
+header .brand span { color: var(--accent); }
+header .model-chip {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  max-width: 45vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.layout { flex: 1; display: flex; min-height: 0; }
+aside {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+aside .side-head { padding: 10px; border-bottom: 1px solid var(--border); }
+aside .sessions { overflow-y: auto; padding: 6px; flex: 1; }
+.session {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  display: block;
+}
+.session:hover { background: var(--panel-2); }
+.session.active { background: var(--panel-2); outline: 1px solid var(--border); }
+.session .title { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session .meta { color: var(--muted); font-size: 11px; }
+main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#messages { flex: 1; overflow-y: auto; padding: 20px; }
+.empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-align: center;
+  gap: 8px;
+}
+.empty h1 { color: var(--text); font-size: 22px; margin: 0; }
+.msg { max-width: 860px; margin: 0 auto 16px; display: flex; gap: 10px; }
+.msg .who {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.msg.user .who { color: var(--accent); }
+.msg.assistant .who { color: var(--green); }
+.msg .bubble {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.msg.user .bubble { background: #14243a; }
+.composer {
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  padding: 12px 16px;
+}
+.composer-inner { max-width: 900px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end; }
+.composer textarea {
+  flex: 1;
+  resize: none;
+  min-height: 46px;
+  max-height: 200px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 12px;
+  outline: none;
+}
+.composer textarea:focus { border-color: var(--accent); }
+.btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent-2); border-color: var(--accent-2); color: #fff; font-weight: 600; }
+.btn.primary:disabled { opacity: .55; cursor: default; }
+.btn.danger { color: var(--red); }
+.btn.small { padding: 4px 9px; font-size: 12px; }
+.hint { color: var(--muted); font-size: 11px; text-align: center; margin-top: 6px; }
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.modal h2 { margin: 0 0 4px; font-size: 18px; }
+.modal p.sub { margin: 0 0 16px; color: var(--muted); font-size: 12px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.field input[type=text], .field input[type=password] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  outline: none;
+}
+.field input:focus { border-color: var(--accent); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.approval {
+  max-width: 860px;
+  margin: 0 auto 14px;
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius);
+  background: #241f12;
+  padding: 12px 14px;
+}
+.approval h3 { margin: 0 0 4px; font-size: 13px; color: var(--yellow); text-transform: uppercase; letter-spacing: .5px; }
+.approval pre {
+  background: rgba(0,0,0,.35);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.approval .row { justify-content: flex-end; }
+.skill-list { display: grid; gap: 8px; }
+.skill-item { border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; }
+.skill-item strong { display: block; font-size: 13px; }
+.skill-item span { color: var(--muted); font-size: 12px; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  max-width: 80vw;
+  display: none;
+  z-index: 40;
+}
+.toast.show { display: block; }
+.toast.error { border-color: var(--red); color: #ffd7d5; }
+.typing { color: var(--muted); font-size: 12px; padding-left: 42px; }
+@media (max-width: 760px) {
+  aside { width: 200px; }
+  .model-chip { display: none; }
+}
+@media (max-width: 560px) {
+  aside { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Deep Code <span>by C.Walia</span></div>
+  <div class="model-chip" id="modelChip">not configured</div>
+  <button class="btn" id="settingsBtn" title="Model and workspace settings">Settings</button>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="side-head">
+      <button class="btn primary" id="newChatBtn" style="width:100%">New chat</button>
+    </div>
+    <div class="sessions" id="sessions"></div>
+    <div style="padding:8px;border-top:1px solid var(--border)">
+      <button class="btn small" id="skillsBtn" style="width:100%">Reference skills</button>
+    </div>
+  </aside>
+
+  <main>
+    <div id="messages">
+      <div class="empty">
+        <h1>Deep Code by C.Walia</h1>
+        <div>Your AI coding assistant. Select a workspace in Settings, then start a chat.</div>
+        <div>File writes, commands, and web fetches always ask for your approval first.</div>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="composer-inner">
+        <textarea id="input" placeholder="Ask about your code, plan a change, or request a fix... (Enter to send, Shift+Enter for newline)"></textarea>
+        <button class="btn primary" id="sendBtn">Send</button>
+      </div>
+      <div class="hint">Online model via your configured provider. Nothing runs on your machine without approval.</div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="sub">The model runs over the internet. Your API key is stored in Windows Credential Manager, never in this page.</p>
+
+    <div class="presets">
+      <button class="btn small" data-preset="opencode">OpenCode Zen</button>
+      <button class="btn small" data-preset="github">GitHub Models</button>
+      <button class="btn small" data-preset="openrouter">OpenRouter</button>
+      <button class="btn small" data-preset="ollama">Ollama (local)</button>
+      <button class="btn small" data-preset="openai">OpenAI</button>
+    </div>
+
+    <div class="field">
+      <label for="baseUrl">Provider base URL</label>
+      <input type="text" id="baseUrl" placeholder="https://opencode.ai/zen/v1" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="model">Model</label>
+      <input type="text" id="model" placeholder="big-pickle" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="workspace">Workspace folder (absolute path)</label>
+      <input type="text" id="workspace" placeholder="C:\Users\you\Projects\my-app" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="apiKey">API key</label>
+      <input type="password" id="apiKey" placeholder="Leave blank to keep the saved key" autocomplete="new-password">
+      <div class="checkline" style="margin-top:8px">
+        <input type="checkbox" id="clearKey">
+        <label for="clearKey" style="margin:0">Remove the saved API key</label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="cancelSettings">Cancel</button>
+      <button class="btn primary" id="saveSettings">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="skillsModal">
+  <div class="modal">
+    <h2>Reference skills</h2>
+    <p class="sub">Bundled documentation the agent can read. These are references, not installed runtimes or permissions.</p>
+    <div class="skill-list" id="skillList"></div>
+    <div class="modal-actions">
+      <button class="btn" id="closeSkills">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state = {
+  config: { base_url: "", model: "", workspace: "", api_key_configured: false },
+  sessions: [],
+  sessionId: null,
+  busy: false,
+  approvals: []
+};
+
+const $ = (id) => document.getElementById(id);
+
+function toast(message, isError) {
+  const el = $("toast");
+  el.textContent = message;
+  el.className = "toast show" + (isError ? " error" : "");
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { el.className = "toast"; }, 4500);
+}
+
+async function api(path, options) {
+  const response = await fetch(path, Object.assign({ headers: { "Content-Type": "application/json" } }, options || {}));
+  let data = null;
+  try { data = await response.json(); } catch (e) { data = null; }
+  if (!response.ok) {
+    const detail = data && data.detail ? data.detail : ("Request failed (" + response.status + ")");
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+  return data;
+}
+
+function updateModelChip() {
+  const chip = $("modelChip");
+  if (!state.config.model) {
+    chip.textContent = "model not configured";
+    return;
+  }
+  let host = "";
+  try { host = new URL(state.config.base_url).host; } catch (e) { host = state.config.base_url; }
+  chip.textContent = state.config.model + " @ " + host;
+  chip.title = state.config.base_url + " | " + state.config.model;
+}
+
+function renderSessions() {
+  const box = $("sessions");
+  box.textContent = "";
+  if (!state.sessions.length) {
+    const empty = document.createElement("div");
+    empty.className = "session";
+    empty.style.color = "var(--muted)";
+    empty.textContent = "No chats yet";
+    box.appendChild(empty);
+    return;
+  }
+  for (const session of state.sessions) {
+    const button = document.createElement("button");
+    button.className = "session" + (session.id === state.sessionId ? " active" : "");
+    const title = document.createElement("span");
+    title.className = "title";
+    title.textContent = session.title || "New chat";
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = (session.message_count || 0) + " messages";
+    button.appendChild(title);
+    button.appendChild(meta);
+    button.addEventListener("click", () => selectSession(session.id));
+    box.appendChild(button);
+  }
+}
+
+function addMessage(role, content) {
+  const container = $("messages");
+  const empty = container.querySelector(".empty");
+  if (empty) empty.remove();
+  const wrapper = document.createElement("div");
+  wrapper.className = "msg " + role;
+  const who = document.createElement("div");
+  who.className = "who";
+  who.textContent = role === "user" ? "You" : "AI";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = content;
+  wrapper.appendChild(who);
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+  return wrapper;
+}
+
+function renderMessages(messages) {
+  const container = $("messages");
+  container.textContent = "";
+  if (!messages.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.innerHTML = "<h1>Deep Code by C.Walia</h1><div>Start the conversation below.</div>";
+    container.appendChild(empty);
+    return;
+  }
+  for (const message of messages) {
+    if (message.role === "user" || message.role === "assistant") {
+      addMessage(message.role, message.content);
+    }
+  }
+  renderApprovals();
+}
+
+function describeApproval(approval) {
+  const payload = approval.payload || {};
+  if (approval.kind === "write_file") {
+    return "Write file: " + (payload.path || "?") + "\n\n" + String(payload.content || "").slice(0, 4000);
+  }
+  if (approval.kind === "command") {
+    return "Run command in " + (payload.cwd || ".") + "\n\n" + (payload.argv || []).join(" ");
+  }
+  if (approval.kind === "https_get") {
+    return "Fetch URL (read-only)\n\n" + (payload.url || "");
+  }
+  return JSON.stringify(payload, null, 2);
+}
+
+function renderApprovals() {
+  document.querySelectorAll(".approval").forEach((node) => node.remove());
+  const container = $("messages");
+  for (const approval of state.approvals) {
+    const card = document.createElement("div");
+    card.className = "approval";
+    const title = document.createElement("h3");
+    title.textContent = "Approval needed - " + approval.kind.replace("_", " ");
+    const pre = document.createElement("pre");
+    pre.textContent = describeApproval(approval);
+    const row = document.createElement("div");
+    row.className = "row";
+    const reject = document.createElement("button");
+    reject.className = "btn small danger";
+    reject.textContent = "Reject";
+    reject.addEventListener("click", () => decideApproval(approval.id, false));
+    const approve = document.createElement("button");
+    approve.className = "btn small primary";
+    approve.textContent = "Approve";
+    approve.addEventListener("click", () => decideApproval(approval.id, true));
+    row.appendChild(reject);
+    row.appendChild(approve);
+    card.appendChild(title);
+    card.appendChild(pre);
+    card.appendChild(row);
+    container.appendChild(card);
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+async function loadSessions() {
+  state.sessions = await api("/api/sessions");
+  renderSessions();
+}
+
+async function loadConfig() {
+  state.config = await api("/api/config");
+  updateModelChip();
+  return state.config;
+}
+
+async function loadApprovals() {
+  state.approvals = await api("/api/approvals");
+  renderApprovals();
+}
+
+async function selectSession(sessionId) {
+  state.sessionId = sessionId;
+  renderSessions();
+  const messages = await api("/api/sessions/" + encodeURIComponent(sessionId) + "/messages");
+  renderMessages(messages);
+  state.approvals = await api("/api/approvals");
+  renderApprovals();
+  $("input").focus();
+}
+
+async function newChat() {
+  const session = await api("/api/sessions", { method: "POST" });
+  state.sessionId = session.id;
+  await loadSessions();
+  renderMessages([]);
+  state.approvals = [];
+  renderApprovals();
+  $("input").focus();
+}
+
+async function sendMessage() {
+  if (state.busy) return;
+  const input = $("input");
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.config.model) {
+    toast("Configure a model in Settings first.", true);
+    openSettings();
+    return;
+  }
+  state.busy = true;
+  $("sendBtn").disabled = true;
+  input.value = "";
+  addMessage("user", text);
+  const typing = document.createElement("div");
+  typing.className = "typing";
+  typing.id = "typing";
+  typing.textContent = "Thinking...";
+  $("messages").appendChild(typing);
+  $("messages").scrollTop = $("messages").scrollHeight;
+  try {
+    const data = await api("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ message: text, session_id: state.sessionId })
+    });
+    state.sessionId = data.session_id;
+    const messages = await api("/api/sessions/" + encodeURIComponent(data.session_id) + "/messages");
+    renderMessages(messages);
+    state.approvals = data.pending_approvals || [];
+    renderApprovals();
+    await loadSessions();
+  } catch (error) {
+    toast(error.message, true);
+    if (state.sessionId) {
+      try {
+        const messages = await api("/api/sessions/" + encodeURIComponent(state.sessionId) + "/messages");
+        renderMessages(messages);
+      } catch (e) { /* ignore */ }
+    }
+  } finally {
+    const node = $("typing");
+    if (node) node.remove();
+    state.busy = false;
+    $("sendBtn").disabled = false;
+    input.focus();
+  }
+}
+
+async function decideApproval(approvalId, approved) {
+  try {
+    const result = await api("/api/approvals/" + encodeURIComponent(approvalId) + "/decision", {
+      method: "POST",
+      body: JSON.stringify({ approved: approved })
+    });
+    toast(approved ? "Action approved." : "Action rejected.", false);
+    if (result.result) {
+      const summary = typeof result.result === "string" ? result.result : JSON.stringify(result.result, null, 2);
+      addMessage("assistant", "Approved action result:\n" + summary.slice(0, 6000));
+    }
+    state.approvals = await api("/api/approvals");
+    renderApprovals();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function openSettings() {
+  $("baseUrl").value = state.config.base_url || "";
+  $("model").value = state.config.model || "";
+  $("workspace").value = state.config.workspace || "";
+  $("apiKey").value = "";
+  $("clearKey").checked = false;
+  $("settingsModal").classList.add("open");
+  $("baseUrl").focus();
+}
+
+async function saveSettings() {
+  const payload = {
+    base_url: $("baseUrl").value.trim(),
+    model: $("model").value.trim(),
+    workspace: $("workspace").value.trim(),
+    clear_api_key: $("clearKey").checked
+  };
+  const key = $("apiKey").value.trim();
+  if (key) payload.api_key = key;
+  try {
+    const result = await api("/api/config", { method: "PUT", body: JSON.stringify(payload) });
+    state.config = {
+      base_url: result.base_url,
+      model: result.model,
+      workspace: result.workspace,
+      api_key_configured: result.api_key_configured
+    };
+    updateModelChip();
+    $("settingsModal").classList.remove("open");
+    toast("Settings saved.", false);
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function applyPreset(name) {
+  const presets = {
+    opencode: { url: "https://opencode.ai/zen/v1", model: "big-pickle" },
+    github: { url: "https://models.github.ai/inference", model: "openai/gpt-4o-mini" },
+    openrouter: { url: "https://openrouter.ai/api/v1", model: "qwen/qwen3-coder:free" },
+    ollama: { url: "http://127.0.0.1:11434/v1", model: "qwen3-coder:14b" },
+    openai: { url: "https://api.openai.com/v1", model: "gpt-4o-mini" }
+  };
+  const preset = presets[name];
+  if (!preset) return;
+  $("baseUrl").value = preset.url;
+  $("model").value = preset.model;
+}
+
+async function openSkills() {
+  try {
+    const skills = await api("/api/skills");
+    const box = $("skillList");
+    box.textContent = "";
+    if (!skills.length) {
+      box.textContent = "No reference skills installed.";
+    }
+    for (const skill of skills) {
+      const item = document.createElement("div");
+      item.className = "skill-item";
+      const name = document.createElement("strong");
+      name.textContent = skill.name + " (" + skill.id + ")";
+      const description = document.createElement("span");
+      description.textContent = " " + skill.description;
+      item.appendChild(name);
+      item.appendChild(description);
+      box.appendChild(item);
+    }
+    $("skillsModal").classList.add("open");
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function autoGrow(textarea) {
+  textarea.style.height = "auto";
+  textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px";
+}
+
+$("newChatBtn").addEventListener("click", () => newChat().catch((e) => toast(e.message, true)));
+$("sendBtn").addEventListener("click", sendMessage);
+$("settingsBtn").addEventListener("click", openSettings);
+$("cancelSettings").addEventListener("click", () => $("settingsModal").classList.remove("open"));
+$("saveSettings").addEventListener("click", saveSettings);
+$("skillsBtn").addEventListener("click", openSkills);
+$("closeSkills").addEventListener("click", () => $("skillsModal").classList.remove("open"));
+document.querySelectorAll("[data-preset]").forEach((button) => {
+  button.addEventListener("click", () => applyPreset(button.getAttribute("data-preset")));
+});
+$("input").addEventListener("input", (event) => autoGrow(event.target));
+$("input").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+  backdrop.addEventListener("click", (event) => {
+    if (event.target === backdrop) backdrop.classList.remove("open");
+  });
+});
+
+(async function init() {
+  try {
+    await loadConfig();
+    await loadSessions();
+    await loadApprovals();
+    if (state.sessions.length) {
+      await selectSession(state.sessions[0].id);
+    }
+    if (!state.config.model) {
+      openSettings();
+    }
+  } catch (error) {
+    toast(error.message, true);
+  }
+})();
+</script>
+</body>
+</html>

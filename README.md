@@ -182,7 +182,7 @@ Also auto detects runtimes, creates virtual environments, sets up conda/anaconda
 
 ## Free Models Galore
 
-Get access to insanely powerful models for FREE. Switch on the fly with /model anytime.
+Get access to insanely powerful models for FREE. By default they run online over your internet connection, so there is nothing to download. Switch models any time in **Settings**, or opt into local Ollama models with `-LocalModels`.
 
 | Model | Source | Notes |
 | --- | --- | --- |
@@ -287,13 +287,13 @@ Blends the finest parts of [opencode](https://github.com/opencode-ai/opencode), 
 
 1. Install Pinokio
 2. Download from URL: https://github.com/Deepontheway/Deep-Code-by-C.Walia
-3. Click **Install** - auto installs Node.js LTS, Git, Python 3.12, Miniconda/Anaconda, SQLite, Microsoft Visual Studio Build Tools, Ollama and all dependencies
-4. Click **Start**
+3. Click **Install** - auto installs Node.js LTS, Git, Python 3.12, Miniconda/Anaconda, SQLite, Microsoft Visual Studio Build Tools and all dependencies (no model downloads)
+4. Click **Start** - the app opens at http://127.0.0.1:8765, where you choose your online provider and API key
 5. Start building fr
 
 ## Direct Install From GitHub
 
-No clone. No Pinokio. One command downloads the latest source from GitHub, installs every dependency, pulls the AI models, creates shortcuts and registers an uninstaller.
+No clone. No Pinokio. One command downloads the latest source from GitHub, installs every dependency, connects an online AI model over your internet connection, creates shortcuts and registers an uninstaller. It does **not** download local model files unless you ask it to.
 
 Open **PowerShell** and run:
 
@@ -311,16 +311,33 @@ Prefer clicking instead of typing:
 - Download **[INSTALL_FROM_GITHUB.cmd](https://raw.githubusercontent.com/Deepontheway/Deep-Code-by-C.Walia/main/INSTALL_FROM_GITHUB.cmd)** and double-click it
 - Or download the repo ZIP: [main.zip](https://github.com/Deepontheway/Deep-Code-by-C.Walia/archive/refs/heads/main.zip), extract it and run `FULL_SETUP_NO_PINOKIO.bat`
 
-Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps.
+### Online models (default, nothing downloaded)
+
+Pick a provider during setup, or pass it up front:
+
+| Provider | Command | Notes |
+| --- | --- | --- |
+| OpenCode Zen | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider opencode -ApiKey <key>` | Free key at https://opencode.ai/auth, default model `big-pickle` |
+| GitHub Models | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider github` | Reuses your `gh auth login` token, default `openai/gpt-4o-mini` |
+| OpenRouter | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider openrouter -ApiKey <key>` | Free key at https://openrouter.ai/keys |
+| Custom | `.\FULL_SETUP_NO_PINOKIO.ps1 -Provider custom -BaseUrl https://host/v1 -Model name -ApiKey <key>` | Any OpenAI-compatible HTTPS endpoint |
+| Local (opt-in) | `.\FULL_SETUP_NO_PINOKIO.ps1 -LocalModels` | Installs Ollama and pulls Qwen/DeepSeek models, several GB |
+
+API keys are stored in Windows Credential Manager, never in the repo. You can change the provider, model, workspace, or key any time from **Settings** in the app. Chat history and config live in `%LOCALAPPDATA%\Deep Code by C.Walia`.
+
+Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps. The uninstaller offers to remove the saved API key, chats, and settings too.
 
 ## Manual Installation Guide
 
-```bash
+```powershell
 git clone https://github.com/Deepontheway/Deep-Code-by-C.Walia.git
 cd Deep-Code-by-C.Walia
-npm install --legacy-peer-deps
-npm run dev
+python -m venv venv
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\RUN_DEEP_CODE_NO_PINOKIO.bat
 ```
+
+The app opens at http://127.0.0.1:8765. Use **Settings** to enter your provider URL, model, workspace folder, and API key. No local model files are required.
 
 ## Usage Guide
 
@@ -342,7 +359,7 @@ It'll ask questions if needed, plan, build, show diffs, ask approval for risky s
 
 - **Talk Naturally** - Don't overthink prompts. Casual works best
 - **Learn While Building** - Ask it to explain things
-- **Use Right Model** - Big Pickle general, Qwen for big refactors, local for offline
+- **Use Right Model** - Big Pickle general, Qwen for big refactors, local Ollama only if you opted in
 - **Use Sub Agents** - For massive projects
 - **Banter Back** - Makes it funnier
 - **Take Breaks** - Tell it if burnt out
@@ -354,7 +371,7 @@ It'll ask questions if needed, plan, build, show diffs, ask approval for risky s
 - [x] AGI style brain, emotions, personality
 - [x] Full dev suite web/android/windows/games
 - [x] 100+ languages
-- [x] Free models + Ollama
+- [x] Free online models + optional local Ollama
 - [x] Pinokio auto installer
 - [x] Privacy safety approval system
 - [x] Git aware planning sub agents

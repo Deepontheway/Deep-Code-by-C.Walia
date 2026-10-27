@@ -4,12 +4,13 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "python -m uvicorn walia.main:app --host 127.0.0.1 --port 8765 --no-access-log",
-        "path": "app",
+        "message": "Starting Deep Code by C. Walia",
+        "path": "{{self}}",
         "venv": "venv",
-        "env": { "WALIACODE_HOME": "../data" },
+        "command": "python -m uvicorn walia.main:app --app-dir app --host 127.0.0.1 --port 8765 --no-access-log",
+        "env": { "WALIACODE_HOME": "{{self}}/data" },
         "on": [
-          { "event": "WaliaCode listening at http://127\\.0\\.0\\.1:8765", "done": true }
+          { "event": "Uvicorn running on http://127\\.0\\.0\\.1:8765", "done": true }
         ]
       }
     },

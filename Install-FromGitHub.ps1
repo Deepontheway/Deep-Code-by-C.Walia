@@ -6,10 +6,16 @@
 #   irm https://raw.githubusercontent.com/Deepontheway/Deep-Code-by-C.Walia/main/Install-FromGitHub.ps1 | iex
 param(
     [switch]$SkipWinget,
-    [switch]$SkipModels,
     [switch]$DownloadOnly,
     [switch]$NoLaunch,
-    [string]$InstallDir
+    [switch]$LocalModels,
+    [ValidateSet("auto", "github", "opencode", "openrouter", "custom", "none")]
+    [string]$Provider = "auto",
+    [string]$ApiKey,
+    [string]$BaseUrl,
+    [string]$Model,
+    [string]$InstallDir,
+    [string]$DataDir
 )
 
 $ErrorActionPreference = "Stop"
@@ -121,6 +127,7 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "   DEEP CODE BY C.WALIA - INSTALL FROM GITHUB        " -ForegroundColor Magenta
 Write-Host "====================================================" -ForegroundColor Magenta
 Write-Host "   No clone, no Pinokio. Live % / speed / remaining.  " -ForegroundColor DarkGray
+Write-Host "   Online AI models by default - no local downloads.  " -ForegroundColor DarkGray
 Write-Host ""
 
 if (-not (Test-Path -LiteralPath $StageDir)) {
@@ -159,8 +166,13 @@ try {
 
     $forward = @("-InstallOnly")
     if ($SkipWinget) { $forward += "-SkipWinget" }
-    if ($SkipModels) { $forward += "-SkipModels" }
+    if ($LocalModels) { $forward += "-LocalModels" }
+    if ($Provider) { $forward += @("-Provider", $Provider) }
+    if ($ApiKey) { $forward += @("-ApiKey", $ApiKey) }
+    if ($BaseUrl) { $forward += @("-BaseUrl", $BaseUrl) }
+    if ($Model) { $forward += @("-Model", $Model) }
     if ($InstallDir) { $forward += @("-InstallDir", $InstallDir) }
+    if ($DataDir) { $forward += @("-DataDir", $DataDir) }
 
     $setupExit = Invoke-Setup -SetupPath $setup.FullName -ForwardArgs $forward
 

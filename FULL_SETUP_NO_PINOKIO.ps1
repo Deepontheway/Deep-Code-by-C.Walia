@@ -5,11 +5,19 @@
 param(
     [switch]$InstallOnly,
     [switch]$SkipWinget,
-    [switch]$SkipModels,
     [switch]$SkipPython,
     [switch]$SkipNpm,
     [switch]$NoCopy,
-    [string]$InstallDir
+    [switch]$NoShortcuts,
+    [switch]$NoRegistry,
+    [switch]$LocalModels,
+    [ValidateSet("auto", "github", "opencode", "openrouter", "custom", "none")]
+    [string]$Provider = "auto",
+    [string]$ApiKey,
+    [string]$BaseUrl,
+    [string]$Model,
+    [string]$InstallDir,
+    [string]$DataDir
 )
 
 $ErrorActionPreference = "Continue"
@@ -181,6 +189,88 @@ function Merge-Unique {
     return ,$list.ToArray()
 }
 
+function Get-GitHubToken {
+    if ($env:GH_TOKEN) { return ([string]$env:GH_TOKEN).Trim() }
+    if ($env:GITHUB_TOKEN) { return ([string]$env:GITHUB_TOKEN).Trim() }
+    $gh = Get-Command gh -ErrorAction SilentlyContinue
+    if (-not $gh) { return $null }
+    try {
+        $token = & gh auth token 2>$null
+        if ($token) { return ([string]$token).Trim() }
+    } catch {}
+    return $null
+}
+
+function Read-Secret {
+    param([string]$Prompt)
+    $secure = Read-Host $Prompt -AsSecureString
+    if (-not $secure) { return $null }
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    try {
+        return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    } finally {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    }
+}
+
+function Save-ProviderKey {
+    param([string]$Key, [string]$PreferredPython)
+
+    if (-not $Key) { return $null }
+    $code = "import sys, keyring; keyring.set_password('walia-code', 'provider_api_key', sys.stdin.read().strip())"
+    $candidates = @()
+    if ($PreferredPython) { $candidates += $PreferredPython }
+    if (Test-Path "venv\Scripts\python.exe") { $candidates += (Join-Path $PWD "venv\Scripts\python.exe") }
+    $py = Get-Command python -ErrorAction SilentlyContinue
+    if ($py) { $candidates += $py.Source }
+
+    foreach ($candidate in $candidates) {
+        if (-not (Test-Path $candidate)) { continue }
+        try {
+            $Key | & $candidate -c $code 2>$null
+            if ($LASTEXITCODE -eq 0) { return "keyring" }
+        } catch {}
+    }
+
+    try {
+        [Environment]::SetEnvironmentVariable("WALIACODE_API_KEY", $Key, "User")
+        return "env"
+    } catch {
+        return $null
+    }
+}
+
+function Save-ProviderConfig {
+    param([string]$ProviderBaseUrl, [string]$ProviderModel, [string]$Workspace = "")
+
+    if (-not $DataDir) {
+        $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia"
+    }
+    if (-not (Test-Path -LiteralPath $DataDir)) {
+        New-Item -ItemType Directory -Path $DataDir -Force | Out-Null
+    }
+    $configPath = Join-Path $DataDir "config.json"
+
+    $existingWorkspace = ""
+    if (Test-Path -LiteralPath $configPath) {
+        try {
+            $existing = Get-Content -Raw -LiteralPath $configPath | ConvertFrom-Json
+            if ($existing.workspace) { $existingWorkspace = [string]$existing.workspace }
+        } catch {}
+    }
+    if (-not $Workspace) { $Workspace = $existingWorkspace }
+
+    $config = [ordered]@{
+        base_url  = $ProviderBaseUrl
+        model     = $ProviderModel
+        workspace = $Workspace
+    }
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [IO.File]::WriteAllText($configPath, ($config | ConvertTo-Json), $utf8NoBom)
+    Write-Host "  Model config written: $configPath" -ForegroundColor Green
+    return $configPath
+}
+
 # ------------------------------------------------------------------
 # Banner + install folder
 # ------------------------------------------------------------------
@@ -188,6 +278,7 @@ Clear-Host
 Write-Host "====================================================" -ForegroundColor Magenta
 Write-Host "    DEEP CODE BY C.WALIA - FULL SETUP (NO PINOKIO)   " -ForegroundColor Magenta
 Write-Host "====================================================" -ForegroundColor Magenta
+Write-Host "   Online AI models (internet) - no local downloads  " -ForegroundColor DarkGray
 Write-Host "   Live percentage + elapsed/remaining time shown    " -ForegroundColor DarkGray
 Write-Host ""
 
@@ -203,8 +294,13 @@ if (-not $InstallDir) {
     }
 }
 
+if (-not $DataDir) {
+    $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia"
+}
+
 Write-Step "Source repo: $RepoRoot"
 Write-Step "Install folder: $InstallDir"
+Write-Step "App data folder: $DataDir"
 
 if (-not $isAdmin -and $InstallDir -like "*Program Files*") {
     Write-Host "[WARNING] Writing to Program Files needs Administrator. Re-run as Admin." -ForegroundColor Yellow
@@ -301,8 +397,13 @@ if (-not $SkipWinget) {
             $newWinget.Add("Microsoft.VisualStudio.2022.BuildTools")
         }
 
-        Write-Host "`n[7/7] Ollama" -ForegroundColor Green
-        if (Install-WingetManaged "Ollama.Ollama" "Ollama" 44 48 180) { $newWinget.Add("Ollama.Ollama") }
+        if ($LocalModels) {
+            Write-Host "`n[7/7] Ollama (local models requested)" -ForegroundColor Green
+            if (Install-WingetManaged "Ollama.Ollama" "Ollama" 44 48 180) { $newWinget.Add("Ollama.Ollama") }
+        } else {
+            Write-Host "`n[7/7] Ollama skipped - using online models over the internet" -ForegroundColor DarkGray
+            Set-OverallProgress 48 "Online model mode - Ollama not needed"
+        }
 
         Write-Host "`nWinget installs finished." -ForegroundColor Green
     } else {
@@ -410,49 +511,170 @@ if ($SkipNpm) {
 Set-OverallProgress 85 "npm dependencies done"
 
 # ------------------------------------------------------------------
-# 8) Ollama models (ollama shows its own real download % too)
+# 8) Model provider - online by default (no local model downloads)
 # ------------------------------------------------------------------
-$models = @("qwen3-coder:14b", "qwen2.5-coder:32b", "deepseek-coder-v2:16b")
-$existingModels = @()
-if (Test-Command "ollama") {
-    $listOut = & ollama list 2>$null | Out-String
-    $existingModels = @($models | Where-Object { $listOut -match [regex]::Escape($_) })
-}
+$providerBaseUrl = $null
+$providerModel = $null
+$providerKey = $null
+$providerLabel = "not configured"
 
-if (-not $SkipModels) {
-    Write-Step "Pulling recommended Ollama models..."
+if ($LocalModels) {
+    Write-Step "Local models requested - preparing Ollama..."
+    if (-not (Test-Command "ollama")) {
+        Write-Host "Ollama is not installed. Install it with: winget install --id Ollama.Ollama -e" -ForegroundColor Yellow
+    }
+
+    $models = @("qwen3-coder:14b", "qwen2.5-coder:32b", "deepseek-coder-v2:16b")
+    $existingModels = @()
     if (Test-Command "ollama") {
-        $modelStart = 85
+        $listOut = & ollama list 2>$null | Out-String
+        $existingModels = @($models | Where-Object { $listOut -match [regex]::Escape($_) })
         $modelSpan = 8
         $per = [int]($modelSpan / $models.Count)
         $i = 0
-        foreach ($model in $models) {
+        foreach ($localModel in $models) {
             $i++
-            $start = $modelStart + (($i - 1) * $per)
+            $start = 85 + (($i - 1) * $per)
             $end = $start + $per
-            if ($existingModels -contains $model) {
-                Write-Host "Model $i/$($models.Count): $model already present - skipping" -ForegroundColor DarkGray
-                Set-OverallProgress $end "$model already present"
+            if ($existingModels -contains $localModel) {
+                Write-Host "Model $i/$($models.Count): $localModel already present - skipping" -ForegroundColor DarkGray
+                Set-OverallProgress $end "$localModel already present"
                 continue
             }
-            Write-Host "Model $i/$($models.Count): $model" -ForegroundColor Yellow
-            $rc = Invoke-ProgressCommand -FilePath "ollama.exe" -Arguments @("pull", $model) -Label "Downloading $model" -StartPct $start -EndPct $end -ExpectedSeconds 300
-            if ($rc -eq 0) { $newModels.Add($model) }
+            Write-Host "Model $i/$($models.Count): $localModel" -ForegroundColor Yellow
+            $rc = Invoke-ProgressCommand -FilePath "ollama.exe" -Arguments @("pull", $localModel) -Label "Downloading $localModel" -StartPct $start -EndPct $end -ExpectedSeconds 300
+            if ($rc -eq 0) { $newModels.Add($localModel) }
         }
-        Write-Host "Ollama models ready." -ForegroundColor Green
+        $providerBaseUrl = "http://127.0.0.1:11434/v1"
+        $providerModel = "qwen3-coder:14b"
+        $providerLabel = "Ollama (local)"
     } else {
-        Write-Host "Ollama not found. Pull models later with: ollama pull <model>" -ForegroundColor Yellow
+        Write-Host "Ollama not available. Local models were not configured." -ForegroundColor Yellow
     }
 } else {
-    Write-Step "Skipping Ollama models (-SkipModels)" "Yellow"
+    Write-Step "Configuring online AI model provider (internet, no local model download)..."
+
+    if (-not $env:OPENCODE_API_KEY -and -not $env:OPENROUTER_API_KEY -and -not $ApiKey -and -not $BaseUrl -and $Provider -eq "auto" -and -not (Get-GitHubToken)) {
+        Write-Host ""
+        Write-Host "Choose an online provider (models run in the cloud, nothing is downloaded):" -ForegroundColor Cyan
+        Write-Host "  1) OpenCode Zen      - free API key at https://opencode.ai/auth" -ForegroundColor White
+        Write-Host "  2) GitHub Models     - uses GitHub login (gh auth login)" -ForegroundColor White
+        Write-Host "  3) OpenRouter        - free API key at https://openrouter.ai/keys" -ForegroundColor White
+        Write-Host "  4) Custom            - any OpenAI-compatible HTTPS endpoint" -ForegroundColor White
+        Write-Host "  5) Skip              - configure later inside the app" -ForegroundColor White
+        $choice = Read-Host "Enter 1-5 (default 1)"
+        if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
+        switch ($choice) {
+            "1" { $Provider = "opencode" }
+            "2" { $Provider = "github" }
+            "3" { $Provider = "openrouter" }
+            "4" { $Provider = "custom" }
+            default { $Provider = "none" }
+        }
+    }
+
+    if ($Provider -eq "auto") {
+        if (Get-GitHubToken) {
+            $Provider = "github"
+        } elseif ($env:OPENCODE_API_KEY) {
+            $Provider = "opencode"
+        } elseif ($env:OPENROUTER_API_KEY) {
+            $Provider = "openrouter"
+        } elseif ($ApiKey) {
+            $Provider = "opencode"
+        } elseif ($BaseUrl) {
+            $Provider = "custom"
+        } else {
+            $Provider = "none"
+        }
+    }
+
+    switch ($Provider) {
+        "github" {
+            $token = $ApiKey
+            if (-not $token) { $token = Get-GitHubToken }
+            if (-not $token) {
+                Write-Host "No GitHub token found. Run 'gh auth login' or paste a token." -ForegroundColor Yellow
+                $token = Read-Secret "GitHub token (leave blank to skip)"
+            }
+            if ($token) {
+                $providerBaseUrl = "https://models.github.ai/inference"
+                if ($Model) { $providerModel = $Model } else { $providerModel = "openai/gpt-4o-mini" }
+                $providerKey = $token
+                $providerLabel = "GitHub Models"
+            }
+        }
+        "opencode" {
+            $token = $ApiKey
+            if (-not $token) { $token = $env:OPENCODE_API_KEY }
+            if (-not $token) {
+                Write-Host "Create a free OpenCode Zen key at https://opencode.ai/auth" -ForegroundColor Cyan
+                $token = Read-Secret "OpenCode Zen API key (leave blank to skip)"
+            }
+            if ($token) {
+                $providerBaseUrl = "https://opencode.ai/zen/v1"
+                if ($Model) { $providerModel = $Model } else { $providerModel = "big-pickle" }
+                $providerKey = $token
+                $providerLabel = "OpenCode Zen"
+            }
+        }
+        "openrouter" {
+            $token = $ApiKey
+            if (-not $token) { $token = $env:OPENROUTER_API_KEY }
+            if (-not $token) {
+                Write-Host "Create a free OpenRouter key at https://openrouter.ai/keys" -ForegroundColor Cyan
+                $token = Read-Secret "OpenRouter API key (leave blank to skip)"
+            }
+            if ($token) {
+                $providerBaseUrl = "https://openrouter.ai/api/v1"
+                if ($Model) { $providerModel = $Model } else { $providerModel = "qwen/qwen3-coder:free" }
+                $providerKey = $token
+                $providerLabel = "OpenRouter"
+            }
+        }
+        "custom" {
+            $customBase = $BaseUrl
+            if (-not $customBase) { $customBase = Read-Host "Base URL (e.g. https://api.example.com/v1)" }
+            $customModel = $Model
+            if (-not $customModel) { $customModel = Read-Host "Model name" }
+            $token = $ApiKey
+            if ($customBase -and $customModel) {
+                $providerBaseUrl = $customBase
+                $providerModel = $customModel
+                $providerKey = $token
+                $providerLabel = "Custom endpoint"
+            }
+        }
+        default {
+            Write-Host "Skipping online provider setup. Add it in the app settings later." -ForegroundColor Yellow
+        }
+    }
+
+    if ($providerBaseUrl) {
+        if ($providerKey) {
+            $venvPython = $null
+            if ($venvPath) { $venvPython = Join-Path $venvPath "Scripts\python.exe" }
+            $keyStore = Save-ProviderKey -Key $providerKey -PreferredPython $venvPython
+            if ($keyStore -eq "keyring") {
+                Write-Host "  API key stored in Windows Credential Manager." -ForegroundColor Green
+            } elseif ($keyStore -eq "env") {
+                Write-Host "  API key stored as the user environment variable WALIACODE_API_KEY." -ForegroundColor Yellow
+            } else {
+                Write-Host "  Could not save the API key. Add it later in the app Settings." -ForegroundColor Yellow
+            }
+        }
+        Save-ProviderConfig -ProviderBaseUrl $providerBaseUrl -ProviderModel $providerModel | Out-Null
+        Write-Host "  Provider: $providerLabel" -ForegroundColor Green
+        Write-Host "  Endpoint: $providerBaseUrl" -ForegroundColor Green
+        Write-Host "  Model:    $providerModel" -ForegroundColor Green
+        Write-Host "  Models run online over the internet - no local model files." -ForegroundColor DarkGray
+    }
 }
-Set-OverallProgress 93 "AI models done"
+Set-OverallProgress 93 "Model provider ready"
 
 # ------------------------------------------------------------------
 # 9) Shortcuts (Desktop + Start Menu)
 # ------------------------------------------------------------------
-Write-Step "Creating shortcuts..."
-Set-OverallProgress 94 "Creating shortcuts"
 $runBat = Join-Path $InstallDir "RUN_DEEP_CODE_NO_PINOKIO.bat"
 $uninstallCmd = Join-Path $InstallDir "Uninstall.cmd"
 $iconPath = Join-Path $InstallDir "icon.png"
@@ -460,52 +682,64 @@ $desktop = [Environment]::GetFolderPath("Desktop")
 $startMenuPrograms = [Environment]::GetFolderPath("Programs")
 $startMenuFolder = Join-Path $startMenuPrograms "Deep Code by C.Walia"
 
-if (-not (Test-Path -LiteralPath $startMenuFolder)) {
-    New-Item -ItemType Directory -Path $startMenuFolder -Force | Out-Null
-}
+if ($NoShortcuts) {
+    Write-Step "Skipping shortcuts (-NoShortcuts)" "Yellow"
+    Set-OverallProgress 94 "Shortcuts skipped"
+} else {
+    Write-Step "Creating shortcuts..."
+    Set-OverallProgress 94 "Creating shortcuts"
+    if (-not (Test-Path -LiteralPath $startMenuFolder)) {
+        New-Item -ItemType Directory -Path $startMenuFolder -Force | Out-Null
+    }
 
-$desktopStart = Join-Path $desktop "Deep Code by C.Walia.lnk"
-$desktopUninstall = Join-Path $desktop "Uninstall Deep Code by C.Walia.lnk"
-$startStart = Join-Path $startMenuFolder "Deep Code by C.Walia.lnk"
-$startUninstall = Join-Path $startMenuFolder "Uninstall Deep Code by C.Walia.lnk"
+    $desktopStart = Join-Path $desktop "Deep Code by C.Walia.lnk"
+    $desktopUninstall = Join-Path $desktop "Uninstall Deep Code by C.Walia.lnk"
+    $startStart = Join-Path $startMenuFolder "Deep Code by C.Walia.lnk"
+    $startUninstall = Join-Path $startMenuFolder "Uninstall Deep Code by C.Walia.lnk"
 
-try {
-    New-AppShortcut -Path $desktopStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
-    New-AppShortcut -Path $desktopUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
-    New-AppShortcut -Path $startStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
-    New-AppShortcut -Path $startUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
-    foreach ($s in @($desktopStart, $desktopUninstall, $startStart, $startUninstall)) { $newShortcuts.Add($s) }
-    Write-Host "Desktop and Start Menu shortcuts created." -ForegroundColor Green
-} catch {
-    Write-Host "Shortcut creation failed: $_" -ForegroundColor Yellow
+    try {
+        New-AppShortcut -Path $desktopStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
+        New-AppShortcut -Path $desktopUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
+        New-AppShortcut -Path $startStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
+        New-AppShortcut -Path $startUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
+        foreach ($s in @($desktopStart, $desktopUninstall, $startStart, $startUninstall)) { $newShortcuts.Add($s) }
+        Write-Host "Desktop and Start Menu shortcuts created." -ForegroundColor Green
+    } catch {
+        Write-Host "Shortcut creation failed: $_" -ForegroundColor Yellow
+    }
 }
 
 # ------------------------------------------------------------------
 # 10) Register in Windows Apps & Features
 # ------------------------------------------------------------------
-Write-Step "Registering app in Windows Apps & Features..."
-Set-OverallProgress 96 "Registering app"
-try {
-    $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\DeepCodeByCWalia"
-    $sizeKb = 0
+if ($NoRegistry) {
+    Write-Step "Skipping Apps & Features registration (-NoRegistry)" "Yellow"
+    Set-OverallProgress 96 "Registry registration skipped"
+} else {
+    Write-Step "Registering app in Windows Apps & Features..."
+    Set-OverallProgress 96 "Registering app"
     try {
-        $sizeKb = [int]((Get-ChildItem -LiteralPath $InstallDir -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1KB)
-    } catch {}
+        $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\DeepCodeByCWalia"
+        $sizeKb = 0
+        try {
+            $sizeKb = [int]((Get-ChildItem -LiteralPath $InstallDir -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1KB)
+        } catch {}
 
-    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
-    Set-ItemProperty -Path $regPath -Name "DisplayName" -Value "Deep Code by C.Walia"
-    Set-ItemProperty -Path $regPath -Name "DisplayVersion" -Value "0.1.0"
-    Set-ItemProperty -Path $regPath -Name "Publisher" -Value "C.Walia"
-    Set-ItemProperty -Path $regPath -Name "InstallLocation" -Value $InstallDir
-    Set-ItemProperty -Path $regPath -Name "DisplayIcon" -Value $iconPath
-    Set-ItemProperty -Path $regPath -Name "UninstallString" -Value "`"$uninstallCmd`""
-    Set-ItemProperty -Path $regPath -Name "QuietUninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\uninstall.ps1`" -Silent"
-    Set-ItemProperty -Path $regPath -Name "EstimatedSize" -Value $sizeKb -Type DWord
-    Set-ItemProperty -Path $regPath -Name "NoModify" -Value 1 -Type DWord
-    Set-ItemProperty -Path $regPath -Name "NoRepair" -Value 1 -Type DWord
-    Write-Host "Registered in Apps & Features." -ForegroundColor Green
-} catch {
-    Write-Host "Registry registration failed: $_" -ForegroundColor Yellow
+        if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
+        Set-ItemProperty -Path $regPath -Name "DisplayName" -Value "Deep Code by C.Walia"
+        Set-ItemProperty -Path $regPath -Name "DisplayVersion" -Value "0.1.0"
+        Set-ItemProperty -Path $regPath -Name "Publisher" -Value "C.Walia"
+        Set-ItemProperty -Path $regPath -Name "InstallLocation" -Value $InstallDir
+        Set-ItemProperty -Path $regPath -Name "DisplayIcon" -Value $iconPath
+        Set-ItemProperty -Path $regPath -Name "UninstallString" -Value "`"$uninstallCmd`""
+        Set-ItemProperty -Path $regPath -Name "QuietUninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\uninstall.ps1`" -Silent"
+        Set-ItemProperty -Path $regPath -Name "EstimatedSize" -Value $sizeKb -Type DWord
+        Set-ItemProperty -Path $regPath -Name "NoModify" -Value 1 -Type DWord
+        Set-ItemProperty -Path $regPath -Name "NoRepair" -Value 1 -Type DWord
+        Write-Host "Registered in Apps & Features." -ForegroundColor Green
+    } catch {
+        Write-Host "Registry registration failed: $_" -ForegroundColor Yellow
+    }
 }
 
 # ------------------------------------------------------------------
@@ -513,12 +747,18 @@ try {
 # ------------------------------------------------------------------
 Write-Step "Writing install manifest..."
 Set-OverallProgress 99 "Writing install manifest"
+[IO.File]::WriteAllText((Join-Path $InstallDir "walia-home.txt"), $DataDir, [Text.Encoding]::Default)
 $manifest = [ordered]@{
     AppName                  = "Deep Code by C.Walia"
     Version                  = "0.1.0"
     InstalledAt              = (Get-Date).ToString("o")
     InstallDir               = $InstallDir
     InstallerSource          = $RepoRoot
+    DataDir                  = $DataDir
+    ModelProvider            = $providerLabel
+    ModelBaseUrl             = $providerBaseUrl
+    ModelName                = $providerModel
+    LocalModels              = [bool]$LocalModels
     WingetPackagesInstalled  = (Merge-Unique $oldWinget $newWinget)
     OllamaModels             = (Merge-Unique $oldModels $newModels)
     Shortcuts                = (Merge-Unique $oldShortcuts $newShortcuts)
@@ -541,12 +781,15 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "                 SETUP COMPLETE                     " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Magenta
 Write-Host "Installed at: $InstallDir" -ForegroundColor Cyan
-Write-Host "Start:      Deep Code by C.Walia.lnk (Desktop / Start Menu)" -ForegroundColor Cyan
-Write-Host "Uninstall:  Uninstall.cmd in the install folder, Start Menu," -ForegroundColor Cyan
-Write-Host "            or Windows Settings > Apps" -ForegroundColor Cyan
+Write-Host "App data:     $DataDir" -ForegroundColor Cyan
+Write-Host "Model:        $providerLabel" -ForegroundColor Cyan
+if ($providerBaseUrl) { Write-Host "Endpoint:     $providerBaseUrl" -ForegroundColor Cyan }
+Write-Host "Start:        Deep Code by C.Walia.lnk (Desktop / Start Menu)" -ForegroundColor Cyan
+Write-Host "Uninstall:    Uninstall.cmd in the install folder, Start Menu," -ForegroundColor Cyan
+Write-Host "              or Windows Settings > Apps" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Uninstall removes the app plus only the models/packages this" -ForegroundColor DarkGray
-Write-Host "setup downloaded (it asks before removing anything shared)." -ForegroundColor DarkGray
+Write-Host "The AI runs online through your internet connection. No local model" -ForegroundColor DarkGray
+Write-Host "files are downloaded unless you explicitly pass -LocalModels." -ForegroundColor DarkGray
 
 if ($InstallOnly) {
     Write-Host "`nInstallOnly specified. Exiting."
@@ -554,6 +797,9 @@ if ($InstallOnly) {
 }
 
 Write-Step "Starting Deep Code by C.Walia..."
-if ($npmCmd) {
+$runBat = Join-Path $InstallDir "RUN_DEEP_CODE_NO_PINOKIO.bat"
+if (Test-Path -LiteralPath $runBat) {
+    Start-Process -FilePath $runBat -WorkingDirectory $InstallDir | Out-Null
+} elseif ($npmCmd) {
     & $npmCmd run dev
 }

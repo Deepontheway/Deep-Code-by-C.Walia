@@ -5,9 +5,17 @@
       "params": {
         "message": "Starting Deep Code by C. Walia",
         "path": "{{self}}",
-        "command": "npm run dev",
-        "terminal": true
+        "venv": "venv",
+        "command": "python -m uvicorn walia.main:app --app-dir app --host 127.0.0.1 --port 8765",
+        "env": { "WALIACODE_HOME": "{{self}}/data" },
+        "on": [
+          { "event": "Uvicorn running on http://127\\.0\\.0\\.1:8765", "done": true }
+        ]
       }
+    },
+    {
+      "method": "local.set",
+      "params": { "url": "http://127.0.0.1:8765" }
     }
   ]
 }

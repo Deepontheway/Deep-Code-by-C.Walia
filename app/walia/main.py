@@ -35,7 +35,7 @@ STORE = Store(HOME / "walia.sqlite3")
 
 def _config() -> dict[str, Any]:
     try:
-        data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        data = json.loads(CONFIG_PATH.read_text(encoding="utf-8-sig"))
         if isinstance(data, dict):
             return data
     except (OSError, ValueError):

@@ -6,7 +6,8 @@ param(
     [switch]$Silent,
     [switch]$PurgeDependencies,
     [switch]$RemoveModels,
-    [switch]$KeepInstallDir
+    [switch]$KeepInstallDir,
+    [switch]$KeepData
 )
 
 $ErrorActionPreference = "Continue"
@@ -57,6 +58,8 @@ try {
 }
 
 $InstallDir = [string]$m.InstallDir
+$DataDir = [string]$m.DataDir
+if (-not $DataDir) { $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia" }
 $wingetPkgs = @()
 $models = @()
 $shortcuts = @()
@@ -67,6 +70,8 @@ if ($m.Shortcuts) { $shortcuts = @($m.Shortcuts) }
 Write-Host ""
 Write-Host "App:         $($m.AppName) $($m.Version)" -ForegroundColor White
 Write-Host "Install dir: $InstallDir" -ForegroundColor White
+Write-Host "App data:    $DataDir" -ForegroundColor White
+Write-Host "Model:       $($m.ModelProvider)" -ForegroundColor White
 Write-Host "Installed:   $($m.InstalledAt)" -ForegroundColor White
 Write-Host ""
 if ($wingetPkgs.Count -gt 0) {
@@ -86,6 +91,7 @@ Write-Host ""
 
 $removeModelsChoice = $RemoveModels
 $removeDepsChoice = $PurgeDependencies
+$removeDataChoice = -not $KeepData
 
 if (-not $Silent) {
     if ($models.Count -gt 0) {
@@ -94,6 +100,7 @@ if (-not $Silent) {
     if ($wingetPkgs.Count -gt 0) {
         $removeDepsChoice = Confirm-Action "Also uninstall system dependencies it downloaded (Node, Python, Git, etc.)? May affect other apps" $false
     }
+    $removeDataChoice = Confirm-Action "Remove chat history, settings, and the saved API key in $DataDir?" $true
     $proceed = Confirm-Action "Continue uninstalling Deep Code by C.Walia?" $true
     if (-not $proceed) {
         Write-Host "Cancelled." -ForegroundColor Yellow
@@ -106,8 +113,11 @@ if (-not $Silent) {
 # ------------------------------------------------------------------
 Write-Step "Stopping running app processes..."
 try {
-    $procs = Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
-        Where-Object { $_.CommandLine -and $_.CommandLine -like "*$InstallDir*" }
+    $procs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -in @("node.exe", "python.exe", "pythonw.exe") -and
+            $_.CommandLine -and $_.CommandLine -like "*$InstallDir*"
+        }
     foreach ($p in $procs) {
         try {
             Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
@@ -133,6 +143,31 @@ if ($removeModelsChoice -and $models.Count -gt 0) {
     }
 } elseif ($models.Count -gt 0) {
     Write-Step "Keeping AI models" "Yellow"
+}
+
+# ------------------------------------------------------------------
+# 2b) Remove saved API key
+# ------------------------------------------------------------------
+if ($removeDataChoice) {
+    Write-Step "Removing saved API key..."
+    $venvPy = Join-Path $InstallDir "venv\Scripts\python.exe"
+    if (-not (Test-Path -LiteralPath $venvPy) -and $m.PythonVenv) {
+        $candidate = Join-Path ([string]$m.PythonVenv) "Scripts\python.exe"
+        if (Test-Path -LiteralPath $candidate) { $venvPy = $candidate }
+    }
+    if (Test-Path -LiteralPath $venvPy) {
+        $pyCode = "import keyring`ntry:`n    keyring.delete_password('walia-code', 'provider_api_key')`nexcept Exception:`n    pass"
+        try { & $venvPy -c $pyCode 2>$null } catch {}
+        Write-Host "  Windows Credential Manager entry cleared (if present)." -ForegroundColor DarkGray
+    }
+    try {
+        if ([Environment]::GetEnvironmentVariable("WALIACODE_API_KEY", "User")) {
+            [Environment]::SetEnvironmentVariable("WALIACODE_API_KEY", $null, "User")
+            Write-Host "  Removed WALIACODE_API_KEY user environment variable." -ForegroundColor DarkGray
+        }
+    } catch {}
+} else {
+    Write-Step "Keeping saved API key" "Yellow"
 }
 
 # ------------------------------------------------------------------
@@ -188,6 +223,21 @@ if ($removeDepsChoice -and $wingetPkgs.Count -gt 0) {
     }
 } elseif ($wingetPkgs.Count -gt 0) {
     Write-Step "Keeping system dependencies" "Yellow"
+}
+
+# ------------------------------------------------------------------
+# 5b) Remove app data (chats, config) unless kept
+# ------------------------------------------------------------------
+if ($removeDataChoice -and $DataDir -and (Test-Path -LiteralPath $DataDir) -and ($DataDir -ne $InstallDir)) {
+    Write-Step "Removing app data..."
+    try {
+        Remove-Item -LiteralPath $DataDir -Recurse -Force -ErrorAction Stop
+        Write-Host "  Removed $DataDir" -ForegroundColor DarkGray
+    } catch {
+        Write-Host "  Could not remove $DataDir - close the app and delete it manually." -ForegroundColor Yellow
+    }
+} elseif ($DataDir -and (Test-Path -LiteralPath $DataDir)) {
+    Write-Step "Keeping app data" "Yellow"
 }
 
 # ------------------------------------------------------------------
