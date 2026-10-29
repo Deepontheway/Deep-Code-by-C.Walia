@@ -1,6 +1,7 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import ipaddress
+import shutil
 import socket
 import subprocess
 from pathlib import Path
@@ -75,6 +76,70 @@ def write_workspace_file(root: str | Path | None, relative_path: str, content: s
     return str(path)
 
 
+def create_workspace_folder(root: str | Path | None, relative_path: str) -> str:
+    base = workspace_root(root)
+    path = workspace_path(base, relative_path)
+    if path == base:
+        raise PolicyError("The workspace root already exists.")
+    if path.exists():
+        if path.is_dir():
+            return path.relative_to(base).as_posix()
+        raise PolicyError("A file with that name already exists.")
+    path.mkdir(parents=True, exist_ok=True)
+    return path.relative_to(base).as_posix()
+
+
+def create_workspace_file(root: str | Path | None, relative_path: str, content: str = "") -> str:
+    base = workspace_root(root)
+    path = workspace_path(base, relative_path)
+    if path == base:
+        raise PolicyError("Choose a file name inside the workspace.")
+    if path.exists():
+        raise PolicyError("That path already exists. Use propose_file_write to replace a file.")
+    data = (content or "").encode("utf-8")
+    if len(data) > MAX_WRITE_BYTES:
+        raise PolicyError(f"File is larger than the {MAX_WRITE_BYTES}-byte write limit.")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path = workspace_path(base, relative_path)
+    path.write_text(content or "", encoding="utf-8", newline="")
+    return path.relative_to(base).as_posix()
+
+
+def move_workspace_path(root: str | Path | None, source: str, destination: str) -> dict[str, str]:
+    base = workspace_root(root)
+    src = workspace_path(base, source)
+    dst = workspace_path(base, destination)
+    if src == base:
+        raise PolicyError("The workspace root cannot be moved.")
+    if dst == base:
+        raise PolicyError("Choose a destination inside the workspace.")
+    if not src.exists():
+        raise PolicyError("The source path does not exist.")
+    if dst.exists():
+        raise PolicyError("The destination already exists. Delete or rename it first.")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(src), str(dst))
+    return {"source": src.relative_to(base).as_posix(), "destination": dst.relative_to(base).as_posix()}
+
+
+def delete_workspace_path(root: str | Path | None, relative_path: str, recursive: bool = False) -> str:
+    base = workspace_root(root)
+    path = workspace_path(base, relative_path)
+    if path == base:
+        raise PolicyError("The workspace root cannot be deleted.")
+    if not path.exists():
+        raise PolicyError("The path does not exist.")
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.is_dir():
+        if not recursive:
+            raise PolicyError("Set recursive to true to delete a folder and its contents.")
+        shutil.rmtree(path)
+    else:
+        raise PolicyError("Only files, symlinks, and folders can be deleted.")
+    return path.relative_to(base).as_posix()
+
+
 def validate_command(command: list[str], cwd: str | None, root: str | Path | None) -> tuple[list[str], Path]:
     if not isinstance(command, list) or not command or len(command) > 64:
         raise PolicyError("Provide a non-empty argument list with at most 64 entries.")
@@ -143,3 +208,4 @@ def validate_public_https_url(url: str) -> str:
         if address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_multicast:
             raise PolicyError("Network fetches to private, local, reserved, or link-local addresses are blocked.")
     return url.strip()
+

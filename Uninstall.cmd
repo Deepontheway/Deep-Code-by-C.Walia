@@ -13,18 +13,11 @@ if not exist "%HERE%uninstall.ps1" (
   exit /b 1
 )
 
-if not exist "%MANIFEST%" (
-  echo [ERROR] install-manifest.json not found.
-  echo Cannot determine installed dependencies.
-  pause
-  exit /b 1
-)
-
 copy /y "%HERE%uninstall.ps1" "%TMPSCRIPT%" >nul
 
 cd /d "%TEMP%"
 
-powershell -ExecutionPolicy Bypass -NoProfile -File "%TMPSCRIPT%" -ManifestPath "%MANIFEST%"
+powershell -ExecutionPolicy Bypass -NoProfile -File "%TMPSCRIPT%" -Full -InstallDir "%HERE%" -ManifestPath "%MANIFEST%"
 
 del "%TMPSCRIPT%" >nul 2>&1
 

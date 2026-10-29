@@ -184,7 +184,11 @@ Also auto detects runtimes, creates virtual environments, sets up conda/anaconda
 
 Get access to powerful models for FREE. By default they run online over your internet connection, so there is nothing to download. Switch models any time in **Settings**, or opt into local Ollama models with `-LocalModels`.
 
-Free OpenCode models need **no API key**. That means `big-pickle` plus every model whose name ends in `-free`. The app loads the current list from OpenCode automatically, so new free models appear in Settings.
+The **Model Hub** in Settings lists every cloud and local model with its provider, access type, download size, and recommended RAM. Local models show an **installed** badge when ready. Choosing **Download** asks for approval, then streams live progress with a percentage bar while `ollama pull` runs.
+
+The **Projects** switcher in the header links folders once and lets you switch the active workspace without retyping paths. **Browse folder** opens the native Windows folder picker, and **Add path** accepts an absolute path directly. Linked projects are stored in `projects.json` next to your chats; removing a project from the list never deletes the folder.
+
+Free OpenCode models need **no API key**. That means `big-pickle` plus every model whose name ends in `-free`. The app loads the current list from OpenCode automatically, so new free models appear in Settings. If OpenCode rate-limits the free tier, the app automatically falls back to the keyless Pollinations model `openai-fast`.
 
 | Model | Source | Notes |
 | --- | --- | --- |
@@ -197,11 +201,12 @@ Free OpenCode models need **no API key**. That means `big-pickle` plus every mod
 | flint-40b-free | OpenCode Zen (free, no key) | 40B general coding model |
 | beam-free | OpenCode Zen (free, no key) | General model |
 | jev-1.13-free | OpenCode Zen (free, no key) | General model |
-| qwen3-coder:14b | Ollama (local, no key) | Opt-in download, runs offline |
+| qwen2.5-coder:14b | Ollama (local, no key) | Opt-in download, runs offline |
 | qwen2.5-coder:32b | Ollama (local, no key) | Opt-in download, runs offline |
 | deepseek-coder-v2:16b | Ollama (local, no key) | Opt-in download, runs offline |
+| openai-fast | Pollinations (free, no key) | Automatic fallback when OpenCode free models are rate-limited |
 
-Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require an API key. If a free model hits its anonymous usage limit, the app automatically retries another free model.
+Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require an API key. If a free model hits its anonymous usage limit, the app retries another OpenCode free model, then falls back to the keyless Pollinations model.
 
 ## Automation On Another Level
 
@@ -330,11 +335,38 @@ The default is OpenCode Zen with `big-pickle`, and it needs no API key. Other fr
 | Local (opt-in) | `.\FULL_SETUP_NO_PINOKIO.ps1 -LocalModels` | Popup asks Yes/No; Yes installs Ollama and pulls Qwen/DeepSeek models, about 38 GB |
 | Online only | `.\FULL_SETUP_NO_PINOKIO.ps1 -NoLocalModels` | Skips the popup and never downloads local models |
 
-Big Pickle and the other cloud models run online and are never downloaded. Local copies available through Ollama are Qwen3 Coder 14B, Qwen2.5 Coder 32B, and DeepSeek Coder V2 16B. Local Qwen models also need no API key.
+Big Pickle and the other cloud models run online and are never downloaded. Local copies available through Ollama are Qwen2.5 Coder 14B, Qwen2.5 Coder 32B, and DeepSeek Coder V2 16B. Local Qwen models also need no API key. If the configured local model is missing, the app automatically selects an installed Ollama model.
 
 Free models need no API key. Paid model keys are stored in Windows Credential Manager, never in the repo. You can change the provider, model, workspace, or key any time from **Settings** in the app. Chat history and config live in `%LOCALAPPDATA%\Deep Code by C.Walia`.
 
-Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps. The uninstaller offers to remove the saved API key, chats, and settings too.
+Uninstall any time from the Start Menu, `Uninstall.cmd` in the install folder, or Windows Settings > Apps. `Uninstall.cmd` performs a full removal: it stops the app, removes downloaded models, the saved API key, chats, settings, shortcuts, registry entry, Python/npm dependencies, and finally deletes the entire install folder. No leftover app folder remains.
+
+## Activation
+
+Every installed copy needs an owner-approved access code before the app unlocks. On first launch the activation screen shows a stable install ID such as `DC-D4B6-2D1D-316B`, with two ways to request access:
+
+1. **Email request** - sends your install ID, name, email, and note to the owner.
+2. **Activation server** - submits the request to the hosted approval dashboard, then the app polls for the signed code automatically.
+
+The owner approves the request and issues a signed Ed25519 code. Paste the code into the activation screen; it is verified offline against the public key bundled with the app. Codes are tied to one install ID and can expire.
+
+To use the hosted approval flow, deploy `activation_server/` (see [activation_server/README.md](activation_server/README.md)) and add the URL to `%LOCALAPPDATA%\Deep Code by C.Walia\config.json`:
+
+```json
+{
+  "activation_server": "https://your-activation-host.example.com"
+}
+```
+
+Without a server, the owner can issue a code directly:
+
+```powershell
+.\venv\Scripts\python.exe scripts\activation_owner.py issue --install-id DC-XXXX-XXXX-XXXX --name "Name" --email "you@example.com" --days 365
+```
+
+## Terminal UI
+
+Prefer the terminal? Run `TUI_DEEP_CODE.bat` from the install folder, or `npm run dev` from the repo. The TUI starts the local backend automatically and shares chats, projects, approvals, and usage with the web app. Type a request and press Enter. Commands: `/help`, `/new`, `/sessions`, `/open`, `/model`, `/project`, `/models`, `/usage`, `/activate`, `/approve`, `/reject`, `/clear`, and `/quit`. Pending approvals appear as a yellow card; press `y` or `n` to decide.
 
 ## Manual Installation Guide
 

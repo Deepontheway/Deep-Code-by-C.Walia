@@ -3,7 +3,7 @@
 ## Runtime
 - Node.js 18+ (installed by Pinokio or manually)
 - npm/pnpm/yarn
-- Ollama (for qwen3-coder:14b local fallback)
+- Ollama (for qwen2.5-coder:14b local fallback)
 - Git
 
 ## Optional (for full features)
@@ -14,5 +14,5 @@
 
 ## Models
 - Big Pickle via opencode/OpenRouter compatible endpoints (configured in app)
-- qwen3-coder:14b via Ollama (http://localhost:11434/v1)
+- qwen2.5-coder:14b via Ollama (http://localhost:11434/v1)
 - aider/opencode patterns integrated

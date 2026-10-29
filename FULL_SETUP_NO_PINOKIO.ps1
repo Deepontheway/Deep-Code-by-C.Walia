@@ -36,6 +36,17 @@ function Set-OverallProgress {
     Write-Progress -Id 1 -Activity "Deep Code by C.Walia Setup" -Status $Status -PercentComplete $Pct
 }
 
+function Set-ComponentProgress {
+    param([int]$Pct, [string]$Status)
+    if ($Pct -lt 0) { $Pct = 0 }
+    if ($Pct -gt 100) { $Pct = 100 }
+    Write-Progress -Id 2 -Activity "Current component" -Status $Status -PercentComplete $Pct
+}
+
+function Clear-ComponentProgress {
+    Write-Progress -Id 2 -Activity "Current component" -Completed
+}
+
 function Format-Duration {
     param([double]$Seconds)
     if ($Seconds -lt 0) { $Seconds = 0 }
@@ -59,11 +70,13 @@ function Invoke-ProgressCommand {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     Set-OverallProgress $StartPct $Label
+    Set-ComponentProgress 0 "$Label starting"
 
     try {
         $proc = Start-Process -FilePath $FilePath -ArgumentList $Arguments -NoNewWindow -PassThru -ErrorAction Stop
     } catch {
         Write-Host "  Could not start $FilePath : $_" -ForegroundColor Yellow
+        Clear-ComponentProgress
         return 1
     }
 
@@ -75,11 +88,14 @@ function Invoke-ProgressCommand {
         $remaining = $ExpectedSeconds - $elapsed
         $status = "$Label  |  elapsed $(Format-Duration $elapsed)  |  remaining ~$(Format-Duration $remaining)"
         Set-OverallProgress $pct $status
+        Set-ComponentProgress ([int]($ratio * 100)) $status
         Start-Sleep -Milliseconds 500
     }
 
     $code = $proc.ExitCode
     Set-OverallProgress $EndPct $Label
+    Set-ComponentProgress 100 "$Label finished"
+    Clear-ComponentProgress
     if ($code -ne 0 -and -not $IgnoreExitCode) {
         Write-Host "  $Label exited with code $code (continuing)" -ForegroundColor Yellow
     }
@@ -316,7 +332,7 @@ Download AI models locally too?
 Big Pickle and other cloud models already work online over the internet. They do not need to be downloaded.
 
 Choose Yes to also install Ollama and download these local models:
-  - qwen3-coder:14b (about 9 GB)
+  - qwen2.5-coder:14b (about 9 GB)
   - qwen2.5-coder:32b (about 20 GB)
   - deepseek-coder-v2:16b (about 9 GB)
 
@@ -417,6 +433,13 @@ if (-not $SkipWinget) {
     if ($winget) {
         Write-Host "Winget also prints its own download progress below." -ForegroundColor DarkGray
         Start-Sleep -Seconds 1
+
+        # Full workstation dependencies. These are system applications; DeepCode
+        # keeps its own models, sandbox workspaces, and training env separately.
+        if (Install-WingetManaged "Microsoft.WindowsTerminal" "Windows Terminal" 1 3 90) { $newWinget.Add("Microsoft.WindowsTerminal") }
+        if (Install-WingetManaged "Spyder.Spyder" "Spyder IDE" 3 7 240) { $newWinget.Add("Spyder.Spyder") }
+        if (Install-WingetManaged "Microsoft.VisualStudioCode" "Visual Studio Code" 7 10 180) { $newWinget.Add("Microsoft.VisualStudioCode") }
+        if (Install-WingetManaged "Docker.DockerDesktop" "Docker Desktop" 10 15 600) { $newWinget.Add("Docker.DockerDesktop") }
 
         Write-Host "`n[1/7] Node.js LTS" -ForegroundColor Green
         if (Install-WingetManaged "OpenJS.NodeJS.LTS" "Node.js LTS" 5 11 120) { $newWinget.Add("OpenJS.NodeJS.LTS") }
@@ -573,7 +596,7 @@ if ($localModelsEnabled) {
         Write-Host "Ollama is not installed. Install it with: winget install --id Ollama.Ollama -e" -ForegroundColor Yellow
     }
 
-    $models = @("qwen3-coder:14b", "qwen2.5-coder:32b", "deepseek-coder-v2:16b")
+    $models = @("qwen2.5-coder:14b", "qwen2.5-coder:32b", "deepseek-coder-v2:16b")
     $existingModels = @()
     if (Test-Command "ollama") {
         $listOut = & ollama list 2>$null | Out-String
@@ -595,7 +618,7 @@ if ($localModelsEnabled) {
             if ($rc -eq 0) { $newModels.Add($localModel) }
         }
         $providerBaseUrl = "http://127.0.0.1:11434/v1"
-        $providerModel = "qwen3-coder:14b"
+        $providerModel = "qwen2.5-coder:14b"
         $providerLabel = "Ollama (local)"
     } else {
         Write-Host "Ollama not available. Local models were not configured." -ForegroundColor Yellow
@@ -729,17 +752,22 @@ if ($NoShortcuts) {
         New-Item -ItemType Directory -Path $startMenuFolder -Force | Out-Null
     }
 
+    $tuiBat = Join-Path $InstallDir "TUI_DEEP_CODE.bat"
     $desktopStart = Join-Path $desktop "Deep Code by C.Walia.lnk"
     $desktopUninstall = Join-Path $desktop "Uninstall Deep Code by C.Walia.lnk"
     $startStart = Join-Path $startMenuFolder "Deep Code by C.Walia.lnk"
+    $startTui = Join-Path $startMenuFolder "Deep Code Terminal.lnk"
     $startUninstall = Join-Path $startMenuFolder "Uninstall Deep Code by C.Walia.lnk"
 
     try {
         New-AppShortcut -Path $desktopStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
         New-AppShortcut -Path $desktopUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
         New-AppShortcut -Path $startStart -TargetPath $runBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start Deep Code by C.Walia"
+        if (Test-Path -LiteralPath $tuiBat) {
+            New-AppShortcut -Path $startTui -TargetPath $tuiBat -WorkDir $InstallDir -IconPath $iconPath -Description "Start the Deep Code terminal UI"
+        }
         New-AppShortcut -Path $startUninstall -TargetPath $uninstallCmd -WorkDir $InstallDir -IconPath $iconPath -Description "Uninstall Deep Code by C.Walia"
-        foreach ($s in @($desktopStart, $desktopUninstall, $startStart, $startUninstall)) { $newShortcuts.Add($s) }
+        foreach ($s in @($desktopStart, $desktopUninstall, $startStart, $startTui, $startUninstall)) { $newShortcuts.Add($s) }
         Write-Host "Desktop and Start Menu shortcuts created." -ForegroundColor Green
     } catch {
         Write-Host "Shortcut creation failed: $_" -ForegroundColor Yellow
@@ -769,7 +797,7 @@ if ($NoRegistry) {
         Set-ItemProperty -Path $regPath -Name "InstallLocation" -Value $InstallDir
         Set-ItemProperty -Path $regPath -Name "DisplayIcon" -Value $iconPath
         Set-ItemProperty -Path $regPath -Name "UninstallString" -Value "`"$uninstallCmd`""
-        Set-ItemProperty -Path $regPath -Name "QuietUninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\uninstall.ps1`" -Silent"
+        Set-ItemProperty -Path $regPath -Name "QuietUninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\uninstall.ps1`" -Silent -Full -InstallDir `"$InstallDir`""
         Set-ItemProperty -Path $regPath -Name "EstimatedSize" -Value $sizeKb -Type DWord
         Set-ItemProperty -Path $regPath -Name "NoModify" -Value 1 -Type DWord
         Set-ItemProperty -Path $regPath -Name "NoRepair" -Value 1 -Type DWord
@@ -844,3 +872,4 @@ if (Test-Path -LiteralPath $runBat) {
 } elseif ($npmCmd) {
     & $npmCmd run dev
 }
+

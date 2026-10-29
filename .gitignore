@@ -11,3 +11,9 @@ app/venv/
 __pycache__/
 *.pyc
 install-manifest.json
+owner_private_key.pem
+license.json
+activation_request.json
+activation_server/data/
+activation_server/.env
+*.sqlite3

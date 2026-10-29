@@ -1,0 +1,12 @@
+[package]
+name = "deepcode-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Native shell for the DeepCode terminal agent"
+license = "MIT"
+
+[[bin]]
+name = "deepcode"
+path = "src/main.rs"
+
+[dependencies]

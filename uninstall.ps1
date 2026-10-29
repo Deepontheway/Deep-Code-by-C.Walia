@@ -3,12 +3,21 @@
 # dependencies/models that the setup downloaded.
 param(
     [string]$ManifestPath,
+    [string]$InstallDir,
     [switch]$Silent,
     [switch]$PurgeDependencies,
     [switch]$RemoveModels,
     [switch]$KeepInstallDir,
-    [switch]$KeepData
+    [switch]$KeepData,
+    [switch]$Full
 )
+
+if ($Full -or $Silent) {
+    $PurgeDependencies = $true
+    $RemoveModels = $true
+    $KeepData = $false
+    $KeepInstallDir = $false
+}
 
 $ErrorActionPreference = "Continue"
 
@@ -39,33 +48,49 @@ Write-Host "     DEEP CODE BY C.WALIA - UNINSTALLER             " -ForegroundCol
 Write-Host "====================================================" -ForegroundColor Magenta
 
 if (-not $ManifestPath) {
-    $ManifestPath = Join-Path $PSScriptRoot "install-manifest.json"
+    $candidate = Join-Path $PSScriptRoot "install-manifest.json"
+    if (Test-Path -LiteralPath $candidate) { $ManifestPath = $candidate }
 }
 
-if (-not (Test-Path -LiteralPath $ManifestPath)) {
-    Write-Host "Install manifest not found: $ManifestPath" -ForegroundColor Red
-    Write-Host "Cannot determine what to remove." -ForegroundColor Red
-    if (-not $Silent) { Read-Host "Press Enter to close" | Out-Null }
-    exit 1
+$m = $null
+if ($ManifestPath -and (Test-Path -LiteralPath $ManifestPath)) {
+    try {
+        $m = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
+    } catch {
+        Write-Host "Could not read manifest, continuing with defaults: $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Install manifest not found; using default install/data locations." -ForegroundColor Yellow
 }
 
-try {
-    $m = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
-} catch {
-    Write-Host "Could not read manifest: $_" -ForegroundColor Red
-    if (-not $Silent) { Read-Host "Press Enter to close" | Out-Null }
-    exit 1
-}
-
-$InstallDir = [string]$m.InstallDir
-$DataDir = [string]$m.DataDir
-if (-not $DataDir) { $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia" }
 $wingetPkgs = @()
 $models = @()
 $shortcuts = @()
-if ($m.WingetPackagesInstalled) { $wingetPkgs = @($m.WingetPackagesInstalled) }
-if ($m.OllamaModels) { $models = @($m.OllamaModels) }
-if ($m.Shortcuts) { $shortcuts = @($m.Shortcuts) }
+if ($m) {
+    if (-not $InstallDir) { $InstallDir = [string]$m.InstallDir }
+    if ($m.WingetPackagesInstalled) { $wingetPkgs = @($m.WingetPackagesInstalled) }
+    if ($m.OllamaModels) { $models = @($m.OllamaModels) }
+    if ($m.Shortcuts) { $shortcuts = @($m.Shortcuts) }
+}
+if (-not $InstallDir) {
+    $InstallDir = Join-Path $env:LOCALAPPDATA "Programs\Deep Code by C.Walia"
+}
+if (-not (Test-Path -LiteralPath $InstallDir) -and $PSScriptRoot) {
+    if (Test-Path -LiteralPath (Join-Path $PSScriptRoot "app\walia")) {
+        $InstallDir = $PSScriptRoot
+    }
+}
+$DataDir = ""
+if ($m) { $DataDir = [string]$m.DataDir }
+if (-not $DataDir) { $DataDir = Join-Path $env:LOCALAPPDATA "Deep Code by C.Walia" }
+
+if ($models.Count -eq 0 -and ($RemoveModels -or $Full)) {
+    $models = @(
+        "qwen2.5-coder:0.5b", "qwen2.5-coder:1.5b", "qwen2.5-coder:3b",
+        "qwen2.5-coder:7b", "qwen2.5-coder:14b", "qwen2.5-coder:32b",
+        "deepseek-coder-v2:16b", "qwen3-coder:30b"
+    )
+}
 
 Write-Host ""
 Write-Host "App:         $($m.AppName) $($m.Version)" -ForegroundColor White
@@ -238,6 +263,24 @@ if ($removeDataChoice -and $DataDir -and (Test-Path -LiteralPath $DataDir) -and 
     }
 } elseif ($DataDir -and (Test-Path -LiteralPath $DataDir)) {
     Write-Step "Keeping app data" "Yellow"
+}
+
+if ($removeDataChoice) {
+    $extraData = @(
+        (Join-Path $env:APPDATA "Deep Code by C.Walia"),
+        (Join-Path $HOME ".deepcode"),
+        (Join-Path $env:LOCALAPPDATA "DeepCode")
+    )
+    foreach ($path in $extraData) {
+        if ($path -and (Test-Path -LiteralPath $path) -and ($path -ne $InstallDir)) {
+            try {
+                Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop
+                Write-Host "  Removed $path" -ForegroundColor DarkGray
+            } catch {
+                Write-Host "  Could not remove $path" -ForegroundColor Yellow
+            }
+        }
+    }
 }
 
 # ------------------------------------------------------------------

@@ -1,6 +1,6 @@
 ﻿import * as fs from 'fs';
 import * as path from 'path';
-import { ensureWaliaDir } from '../tools/approval/index.js';
+import { ensureWaliaDir } from '../../tools/approval/index.js';
 
 export function initPlanning() {
   const dir = ensureWaliaDir();

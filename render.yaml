@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: deep-code-activation
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./activation_server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: OWNER_TOKEN
+        sync: false
+      - key: ACTIVATION_PRIVATE_KEY_PEM
+        sync: false
+      - key: DATABASE_URL
+        sync: false

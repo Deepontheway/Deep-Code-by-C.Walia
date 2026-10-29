@@ -1,5 +1,6 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
+import os
 import threading
 import time
 import urllib.request
@@ -10,7 +11,7 @@ import uvicorn
 from .main import app
 
 HOST = "127.0.0.1"
-PORT = 8765
+PORT = int(os.environ.get("WALIACODE_PORT", "8765"))
 URL = f"http://{HOST}:{PORT}"
 
 
@@ -30,9 +31,11 @@ def _open_browser_when_ready() -> None:
 
 
 def main() -> None:
-    threading.Thread(target=_open_browser_when_ready, daemon=True).start()
+    if os.environ.get("DEEPCODE_NO_BROWSER") != "1":
+        threading.Thread(target=_open_browser_when_ready, daemon=True).start()
     uvicorn.run(app, host=HOST, port=PORT, log_level="info")
 
 
 if __name__ == "__main__":
     main()
+

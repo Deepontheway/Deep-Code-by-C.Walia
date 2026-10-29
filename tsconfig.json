@@ -3,14 +3,17 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "outDir": "dist",
     "rootDir": ".",
-    "strict": 	rue,
-    "esModuleInterop": 	rue,
-    "skipLibCheck": 	rue,
-    "forceConsistentCasingInFileNames": 	rue,
-    "resolveJsonModule": 	rue
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   },
   "include": ["bin/**/*", "packages/**/*"],
   "exclude": ["node_modules", "dist", "references"]
 }
+
+

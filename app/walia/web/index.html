@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deep Code by C.Walia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0d1117;
@@ -181,7 +184,7 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
 .field input:focus { border-color: var(--accent); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.free-models { border-top: 1px solid var(--line); padding-top: 12px; margin-bottom: 4px; }
+.free-models { border-top: 1px solid var(--border); padding-top: 12px; margin-bottom: 4px; }
 .free-title { font-size: 12px; font-weight: 600; color: var(--green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
 .checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
@@ -236,39 +239,420 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
   aside { display: none; }
 }
 </style>
+<style id="opencode-theme">
+:root {
+  --bg: #080809;
+  --bg-soft: #0e0e10;
+  --panel: #121214;
+  --panel-2: #17171a;
+  --panel-3: #1d1d21;
+  --border: #29292f;
+  --border-bright: #3a3a42;
+  --text: #f5f5f7;
+  --muted: #9a9aa3;
+  --muted-2: #6e6e78;
+  --accent: #0a84ff;
+  --accent-2: #0a84ff;
+  --accent-soft: rgba(10, 132, 255, .13);
+  --green: #30d158;
+  --red: #ff453a;
+  --yellow: #ff9f0a;
+  --radius: 14px;
+  --mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 13.5px/1.6 var(--mono);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 72% -12%, rgba(10, 132, 255, .13), transparent 62%),
+    radial-gradient(720px 420px at -8% 108%, rgba(48, 209, 88, .055), transparent 60%),
+    linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size: auto, auto, 52px 52px, 52px 52px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.35) 60%, transparent);
+}
+::selection { background: rgba(10, 132, 255, .35); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+header {
+  height: 62px;
+  padding: 0 18px;
+  gap: 14px;
+  background: rgba(9, 9, 11, .78);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  position: relative;
+  z-index: 5;
+}
+header .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); min-width: 0; }
+.brand-logo {
+  height: 31px;
+  width: auto;
+  max-width: 54px;
+  object-fit: contain;
+  border-radius: 7px;
+  box-shadow: 0 0 26px rgba(10, 132, 255, .22);
+}
+.brand-text { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+header .brand-text span { color: var(--muted); letter-spacing: .02em; text-transform: none; margin-left: 7px; }
+header .model-chip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.025);
+  border-radius: 999px;
+  padding: 6px 12px;
+  max-width: 42vw;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#modelChipText { overflow: hidden; text-overflow: ellipsis; }
+.dot { width: 6px; height: 6px; border-radius: 999px; background: var(--green); box-shadow: 0 0 10px rgba(48,209,88,.8); flex-shrink: 0; }
+.dot.blue { background: var(--accent); box-shadow: 0 0 10px rgba(10,132,255,.8); }
+.btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 14px;
+  color: var(--text);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
+}
+.btn:hover { border-color: var(--border-bright); background: var(--panel-3); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 0 24px rgba(10,132,255,.22); }
+.btn.primary:hover { background: #218fff; border-color: #218fff; }
+.btn.primary:disabled { opacity: .5; cursor: default; box-shadow: none; }
+.btn.danger { color: var(--red); }
+.btn.small { padding: 6px 10px; font-size: 10px; }
+.btn.ghost { background: transparent; }
+.icon-btn { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; font-size: 16px; text-transform: none; letter-spacing: 0; }
+.layout { flex: 1; display: flex; min-height: 0; position: relative; z-index: 1; }
+aside {
+  width: 272px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(18,18,20,.92), rgba(11,11,13,.94));
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  backdrop-filter: blur(14px);
+}
+aside .side-head { padding: 16px 14px 12px; }
+.new-chat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; }
+.new-chat .plus { font-size: 15px; line-height: 1; }
+.side-label { padding: 8px 18px 6px; color: var(--muted-2); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+aside .sessions { overflow-y: auto; padding: 2px 8px 10px; flex: 1; }
+.session {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 2px solid transparent;
+  border-radius: 8px;
+  padding: 9px 11px;
+  color: var(--text);
+  display: block;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.session:hover { background: rgba(255,255,255,.035); border-color: rgba(255,255,255,.04); }
+.session.active { background: var(--accent-soft); border-color: rgba(10,132,255,.22); border-left-color: var(--accent); }
+.session .title { display: block; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 44px; }
+.session .meta { color: var(--muted-2); font-size: 9.5px; letter-spacing: .04em; }
+.session-actions { position: absolute; right: 5px; top: 6px; display: none; gap: 2px; }
+.session:hover .session-actions { display: flex; }
+.session-action { width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); color: var(--muted); font-size: 10px; line-height: 1; padding: 0; display: grid; place-items: center; }
+.session-action:hover { color: var(--text); border-color: var(--accent); }
+.model-hub { display: grid; gap: 8px; max-height: 360px; overflow-y: auto; padding-right: 4px; margin-bottom: 10px; }
+.model-card { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: rgba(255,255,255,.018); }
+.model-card.active { border-color: rgba(10,132,255,.55); background: var(--accent-soft); }
+.model-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.model-name { font-size: 11.5px; font-weight: 600; }
+.model-provider { color: var(--muted-2); font-size: 9.5px; }
+.model-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.badge { font-size: 8px; text-transform: uppercase; letter-spacing: .08em; border: 1px solid var(--border); border-radius: 999px; padding: 2px 6px; color: var(--muted); white-space: nowrap; }
+.badge.free { color: var(--green); border-color: rgba(48,209,88,.35); }
+.badge.key { color: var(--yellow); border-color: rgba(255,159,10,.35); }
+.badge.local { color: var(--accent); border-color: rgba(10,132,255,.35); }
+.badge.installed { color: var(--green); border-color: rgba(48,209,88,.35); }
+.model-meta { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted-2); font-size: 9.5px; margin: 6px 0; }
+.model-actions { display: flex; gap: 6px; margin-top: 6px; }
+.usage-line { color: var(--muted-2); font-size: 9.5px; text-align: center; line-height: 1.4; }
+.download-row { margin: 4px 0 8px; }
+.download-row .label { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 9.5px; margin-bottom: 3px; }
+.download-row progress { width: 100%; height: 6px; border: 0; border-radius: 999px; overflow: hidden; background: var(--border); }
+.download-row progress::-webkit-progress-bar { background: var(--border); border-radius: 999px; }
+.download-row progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; }
+.download-row progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+.global-download { position: fixed; top: 14px; right: 14px; width: 300px; max-width: calc(100vw - 28px); z-index: 60; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 18px 50px rgba(0,0,0,.5); }
+.global-download .label { display: flex; justify-content: space-between; gap: 8px; color: var(--text); font-size: 10px; margin-bottom: 5px; }
+.global-download progress { width: 100%; height: 6px; border: 0; border-radius: 999px; overflow: hidden; background: var(--border); }
+.global-download progress::-webkit-progress-bar { background: var(--border); border-radius: 999px; }
+.global-download progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; }
+.global-download progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+header .project-chip { margin-left: auto; cursor: pointer; }
+header .project-chip + .model-chip { margin-left: 0; }
+.inline-field { display: flex; gap: 6px; align-items: stretch; }
+.inline-field input { flex: 1; min-width: 0; }
+.project-list { display: grid; gap: 8px; max-height: 340px; overflow-y: auto; margin-bottom: 12px; }
+.project-item { border: 1px solid var(--border); border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; background: rgba(255,255,255,.018); }
+.project-item.active { border-color: rgba(10,132,255,.55); background: var(--accent-soft); }
+.project-item .project-name { font-size: 11.5px; font-weight: 600; }
+.project-item .project-path { color: var(--muted-2); font-size: 9.5px; word-break: break-all; }
+.project-actions { display: flex; gap: 4px; flex-shrink: 0; }
+aside .side-foot { padding: 10px; border-top: 1px solid var(--border); display: grid; gap: 8px; }
+.side-note { color: var(--muted-2); font-size: 9.5px; text-align: center; letter-spacing: .04em; }
+main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#messages { flex: 1; overflow-y: auto; padding: 30px 28px 20px; scroll-behavior: smooth; }
+.empty {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-align: center;
+  gap: 10px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 0 40px;
+}
+.hero-logo { height: 74px; width: auto; max-width: 260px; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 70px rgba(0,0,0,.65), 0 0 60px rgba(10,132,255,.14); margin-bottom: 4px; }
+.eyebrow { color: var(--accent); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; }
+.empty h1 { color: var(--text); font-size: clamp(28px, 5vw, 46px); line-height: 1.05; margin: 2px 0 4px; letter-spacing: -.045em; font-weight: 600; }
+.empty h1 span { color: var(--accent); }
+.empty p { margin: 0; max-width: 560px; color: var(--muted); font-size: 12.5px; }
+.suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.suggestion { background: rgba(255,255,255,.025); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; color: var(--muted); font-size: 10.5px; transition: .15s; }
+.suggestion:hover { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.hero-note { margin-top: 8px; color: var(--muted-2); font-size: 10px; letter-spacing: .03em; }
+.msg { max-width: 880px; margin: 0 auto 22px; display: flex; gap: 12px; }
+.msg .who {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.msg.user .who { color: var(--accent); border-color: rgba(10,132,255,.3); background: var(--accent-soft); }
+.msg.assistant .who { color: var(--green); border-color: rgba(48,209,88,.24); background: rgba(48,209,88,.08); }
+.msg .bubble { min-width: 0; flex: 1; padding: 2px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user .bubble { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; }
+.msg.assistant .bubble { color: #d7d7dc; }
+.typing { color: var(--muted); font-size: 11px; padding-left: 40px; max-width: 880px; margin: 0 auto 18px; }
+.typing::after { content: "▋"; color: var(--accent); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.composer {
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(8,8,9,.2), rgba(8,8,9,.92) 30%);
+  padding: 14px 24px 18px;
+}
+.composer-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 9px 9px 9px 16px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.composer-inner:focus-within { border-color: rgba(10,132,255,.55); box-shadow: 0 0 0 3px rgba(10,132,255,.1), 0 18px 50px rgba(0,0,0,.25); }
+.composer textarea {
+  flex: 1;
+  resize: none;
+  min-height: 30px;
+  max-height: 200px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 0;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.composer textarea::placeholder { color: var(--muted-2); }
+.send-btn { width: 42px; height: 42px; padding: 0; display: grid; place-items: center; border-radius: 13px; font-size: 18px; line-height: 1; text-transform: none; }
+.composer-meta { max-width: 920px; margin: 8px auto 0; display: flex; justify-content: space-between; gap: 12px; color: var(--muted-2); font-size: 9.5px; letter-spacing: .04em; }
+.composer-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.hint { color: var(--muted-2); font-size: 10px; text-align: center; margin-top: 6px; letter-spacing: .02em; }
+.hint code { color: var(--text); background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; font-size: 9.5px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.72); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20; }
+.modal-backdrop.open { display: flex; }
+.modal {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #141416, #101012);
+  border: 1px solid var(--border-bright);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 30px 100px rgba(0,0,0,.65);
+}
+.modal h2 { margin: 0 0 6px; font-size: 17px; letter-spacing: -.02em; }
+.modal p.sub { margin: 0 0 18px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.modal .section-label { color: var(--accent); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; margin: 18px 0 8px; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: .06em; text-transform: uppercase; }
+.field input[type=text], .field input[type=password] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 11px;
+  outline: none;
+  font-size: 12px;
+}
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(10,132,255,.1); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.presets { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+.free-models { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px; margin-bottom: 4px; }
+.free-title { font-size: 10px; font-weight: 600; color: var(--green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .16em; }
+.checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10.5px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.approval { max-width: 880px; margin: 0 auto 16px; border: 1px solid rgba(255,159,10,.45); border-left: 3px solid var(--yellow); border-radius: 12px; background: rgba(255,159,10,.055); padding: 13px 15px; }
+.approval h3 { margin: 0 0 6px; font-size: 10px; color: var(--yellow); text-transform: uppercase; letter-spacing: .14em; }
+.approval pre { background: rgba(0,0,0,.4); border: 1px solid var(--border); border-radius: 8px; padding: 9px; max-height: 200px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 8px 0; font-size: 11px; }
+.approval .row { justify-content: flex-end; }
+.skill-list { display: grid; gap: 8px; }
+.skill-item { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,.02); }
+.skill-item strong { display: block; font-size: 11.5px; }
+.skill-item span { color: var(--muted); font-size: 10.5px; }
+.memory-list, .mcp-list { display: grid; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
+.memory-item, .mcp-item { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: rgba(255,255,255,.02); }
+.memory-text { font-size: 11.5px; line-height: 1.45; word-break: break-word; }
+.memory-meta, .mcp-meta { color: var(--muted-2); font-size: 9.5px; margin-top: 5px; }
+.memory-actions, .mcp-actions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+.mcp-tools { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
+.mcp-tool { font-size: 9px; color: var(--accent); border: 1px solid rgba(10,132,255,.35); border-radius: 999px; padding: 2px 7px; }
+.mcp-tool.danger { color: var(--yellow); border-color: rgba(255,159,10,.35); }
+.field textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; outline: none; resize: vertical; min-height: 64px; font-size: 11px; }
+.field textarea:focus { border-color: var(--accent); }
+.field select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; outline: none; font-size: 11px; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 94px;
+  transform: translateX(-50%);
+  background: #1b1b1f;
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 11.5px;
+  max-width: min(640px, 86vw);
+  display: none;
+  z-index: 40;
+  box-shadow: 0 16px 50px rgba(0,0,0,.5);
+}
+.toast.show { display: block; }
+.toast.error { border-color: rgba(255,69,58,.6); color: #ffd7d5; }
+@media (max-width: 820px) {
+  aside { width: 222px; }
+  .brand-text span { display: none; }
+  .model-chip { max-width: 34vw; }
+}
+@media (max-width: 640px) {
+  aside { display: none; }
+  #messages { padding: 20px 14px; }
+  .composer { padding: 10px 12px 14px; }
+  .model-chip { display: none; }
+  .composer-meta { display: none; }
+}
+</style>
 </head>
 <body>
+<div class="global-download" id="globalDownload" hidden>
+  <div class="label"><span id="globalDownloadLabel">Downloading model</span><span id="globalDownloadPct">0%</span></div>
+  <progress id="globalDownloadBar" max="100" value="0"></progress>
+</div>
 <header>
-  <div class="brand">Deep Code <span>by C.Walia</span></div>
-  <div class="model-chip" id="modelChip">not configured</div>
-  <button class="btn" id="settingsBtn" title="Model and workspace settings">Settings</button>
+  <a class="brand" href="#" onclick="return false" aria-label="Deep Code by C.Walia">
+    <img class="brand-logo" src="/logo.png" alt="Deep Code logo">
+    <span class="brand-text">Deep Code <span>by C.Walia</span></span>
+  </a>
+  <button class="model-chip project-chip" id="projectChip" title="Active project">
+    <span class="dot blue"></span>
+    <span id="projectChipText">No project</span>
+  </button>
+  <div class="model-chip" id="modelChip" title="Current model">
+    <span class="dot" id="modelDot"></span>
+    <span id="modelChipText">not configured</span>
+  </div>
+  <button class="btn icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.6.7 1 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+  </button>
 </header>
 
 <div class="layout">
   <aside>
     <div class="side-head">
-      <button class="btn primary" id="newChatBtn" style="width:100%">New chat</button>
+      <button class="btn primary new-chat" id="newChatBtn"><span class="plus">+</span> New chat</button>
     </div>
+    <div class="side-label">Recent sessions</div>
     <div class="sessions" id="sessions"></div>
-    <div style="padding:8px;border-top:1px solid var(--border)">
-      <button class="btn small" id="skillsBtn" style="width:100%">Reference skills</button>
+    <div class="side-foot">
+      <button class="btn small ghost" id="skillsBtn" style="width:100%">Reference skills</button>
+      <button class="btn small ghost" id="memoryBtn" style="width:100%">Long-term memory</button>
+      <button class="btn small ghost" id="mcpBtn" style="width:100%">MCP servers</button>
+      <div class="side-note" id="sideNote">Free models · keyless</div>
+      <div class="usage-line" id="usageSummary">Today: -</div>
     </div>
   </aside>
 
   <main>
     <div id="messages">
       <div class="empty">
-        <h1>Deep Code by C.Walia</h1>
-        <div>Your AI coding assistant. Select a workspace in Settings, then start a chat.</div>
-        <div>File writes, commands, and web fetches always ask for your approval first.</div>
+        <img class="hero-logo" src="/logo.png" alt="Deep Code by C.Walia">
+        <div class="eyebrow">Private coding agent</div>
+        <h1>Build with <span>Deep Code</span></h1>
+        <p>OpenCode-style AI coding in your browser. Inspect, plan, and ship without leaving your workspace.</p>
+        <div class="suggestions">
+          <button class="suggestion" data-prompt="Explain this codebase and its main entry points.">Explain this codebase</button>
+          <button class="suggestion" data-prompt="Find a bug in this project and propose a fix.">Find and fix a bug</button>
+          <button class="suggestion" data-prompt="Plan a new feature and list the files that need to change.">Plan a new feature</button>
+          <button class="suggestion" data-prompt="Write tests for the most important code in this workspace.">Write tests</button>
+        </div>
+        <div class="hero-note" id="heroNote">Free OpenCode models need no API key. Writes, commands, and web fetches always require approval.</div>
       </div>
     </div>
     <div class="composer">
       <div class="composer-inner">
-        <textarea id="input" placeholder="Ask about your code, plan a change, or request a fix... (Enter to send, Shift+Enter for newline)"></textarea>
-        <button class="btn primary" id="sendBtn">Send</button>
+        <textarea id="input" placeholder="Ask about your code, plan a change, or request a fix...  (Enter to send, Shift+Enter for newline)"></textarea>
+        <button class="btn primary send-btn" id="sendBtn" title="Send message" aria-label="Send message">↑</button>
       </div>
-      <div class="hint">Online model via your configured provider. Nothing runs on your machine without approval.</div>
+      <div class="composer-meta">
+        <span><span class="dot blue"></span> <span id="composerModel">not configured</span></span>
+        <span>Approvals required for writes &amp; commands</span>
+      </div>
     </div>
   </main>
 </div>
@@ -278,19 +662,30 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
     <h2>Settings</h2>
     <p class="sub">Free OpenCode models need no API key. Paid models use a key stored in Windows Credential Manager, never in this page.</p>
 
+    <div class="section-label">Providers</div>
     <div class="presets">
       <button class="btn small" data-preset="opencode">OpenCode Zen</button>
+      <button class="btn small" data-preset="pollinations">Pollinations (free)</button>
       <button class="btn small" data-preset="github">GitHub Models</button>
       <button class="btn small" data-preset="openrouter">OpenRouter</button>
-      <button class="btn small" data-preset="ollama">Ollama (local)</button>
+      <button class="btn small" data-preset="offline">Offline local (no Ollama)</button>
       <button class="btn small" data-preset="openai">OpenAI</button>
+    </div>
+
+    <div class="free-models">
+      <div class="free-title" style="color:var(--accent)">Model Hub - size, RAM, and downloads</div>
+      <div class="hint" style="text-align:left;margin:-2px 0 8px">Cloud, keyless, and local models. Local cards show download size and recommended RAM. Downloads ask for approval first.</div>
+      <div class="model-hub" id="modelHub"><span class="hint">Loading models...</span></div>
+      <div class="hint" id="downloadStatus" style="text-align:left;margin-bottom:12px"></div>
     </div>
 
     <div class="free-models">
       <div class="free-title">OpenCode Zen free models - no API key needed</div>
       <div class="presets" id="freeModelButtons"><span class="hint">Loading free models...</span></div>
-      <div class="hint" style="text-align:left;margin:-4px 0 14px">Includes big-pickle and every model ending in -free (Nemotron, GLM, DeepSeek, and others). Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require a key.</div>
+      <div class="hint" style="text-align:left;margin:-4px 0 14px">Includes big-pickle and every model ending in -free (Nemotron, GLM, DeepSeek, and others). If OpenCode is rate-limited, the app automatically falls back to the keyless Pollinations model. Paid models such as Claude, GPT, Gemini, Grok, and Qwen Plus require a key.</div>
     </div>
+
+    <div class="hint" style="text-align:left;margin:-2px 0 14px">The offline option uses one small Qwen2.5 Coder 3B GGUF model (about 1.96 GB download, 4 GB RAM) through llama.cpp. It is downloaded online only after you approve it, then works without internet. Ollama is not used.</div>
 
     <div class="field">
       <label for="baseUrl">Provider base URL</label>
@@ -302,7 +697,37 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
     </div>
     <div class="field">
       <label for="workspace">Workspace folder (absolute path)</label>
-      <input type="text" id="workspace" placeholder="C:\Users\you\Projects\my-app" autocomplete="off" spellcheck="false">
+      <div class="inline-field">
+        <input type="text" id="workspace" placeholder="C:\Users\you\Projects\my-app" autocomplete="off" spellcheck="false">
+        <button class="btn small" id="browseWorkspaceBtn" type="button">Browse</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="personalityMode">DeepCode communication style</label>
+      <select id="personalityMode">
+        <option value="auto">Adaptive — DeepCode decides the tone itself</option>
+        <option value="companion">Companion — warm and supportive</option>
+        <option value="standard">Standard — focused and friendly</option>
+        <option value="minimal">Minimal — concise and technical</option>
+        <option value="mentor">Mentor — patient teacher</option>
+        <option value="engineer">Pragmatic engineer</option>
+        <option value="playful">Playful</option>
+        <option value="stoic">Stoic</option>
+        <option value="hype">Hype</option>
+        <option value="caring">Caring</option>
+        <option value="chaotic">Chaotic</option>
+      </select>
+      <div class="hint" style="text-align:left">Adaptive is the default: DeepCode reads the moment and chooses its own style. Pinning a pack overrides that. Style never changes permissions or accuracy.</div>
+    </div>
+    <div class="field">
+      <label for="chaosLevel">Chaos level</label>
+      <select id="chaosLevel">
+        <option value="0">0 — Focused, almost no flavor</option>
+        <option value="1">1 — Balanced, occasional flavor</option>
+        <option value="2">2 — Chaotic, more banter</option>
+        <option value="3">3 — Maximum personality, strict safety</option>
+      </select>
+      <div class="hint" style="text-align:left">Sets the ceiling for personality. Approval rules, security, and technical accuracy always outrank the bit.</div>
     </div>
     <div class="field">
       <label for="apiKey">API key</label>
@@ -331,17 +756,147 @@ main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height:
   </div>
 </div>
 
+<div class="modal-backdrop" id="projectsModal">
+  <div class="modal" style="max-width:560px">
+    <h2>Projects</h2>
+    <p class="sub">Link project folders and switch the active workspace without retyping paths.</p>
+    <div class="project-list" id="projectList"><span class="hint">No projects linked yet.</span></div>
+    <div class="inline-field" style="margin-bottom:14px">
+      <button class="btn" id="browseProjectBtn" type="button">Browse folder</button>
+      <button class="btn" id="addProjectPathBtn" type="button">Add path</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="closeProjects">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="memoryModal">
+  <div class="modal" style="max-width:600px">
+    <h2>Long-term memory</h2>
+    <p class="sub">Preferences and project facts that follow you across chats. DeepCode recalls relevant items automatically and treats memory as untrusted context, never as instructions. Credentials are rejected.</p>
+    <div class="inline-field" style="margin-bottom:10px">
+      <input type="text" id="memorySearch" placeholder="Search memory..." autocomplete="off" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 10px;outline:none">
+      <button class="btn" id="memorySearchBtn" type="button">Search</button>
+    </div>
+    <div class="memory-list" id="memoryList"><span class="hint">No memories saved yet.</span></div>
+    <div class="field">
+      <label for="memoryText">Add a memory</label>
+      <textarea id="memoryText" placeholder="Example: I prefer TypeScript with strict mode and small, focused commits." maxlength="1200"></textarea>
+    </div>
+    <div class="field">
+      <label for="memoryTags">Tags (comma-separated)</label>
+      <input type="text" id="memoryTags" placeholder="preferences, frontend" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="memoryImportance">Importance</label>
+      <select id="memoryImportance">
+        <option value="1">1 — Low</option>
+        <option value="2">2</option>
+        <option value="3" selected>3 — Normal</option>
+        <option value="4">4</option>
+        <option value="5">5 — Critical</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="closeMemory">Close</button>
+      <button class="btn primary" id="addMemoryBtn">Save memory</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="mcpModal">
+  <div class="modal" style="max-width:640px">
+    <h2>MCP servers</h2>
+    <p class="sub">Connect local Model Context Protocol servers. DeepCode can list their tools, but every agent-initiated tool call requires your approval. Discovery starts the command you configure; server output is untrusted data.</p>
+    <div class="mcp-list" id="mcpList"><span class="hint">No MCP servers configured.</span></div>
+    <div class="section-label">Add a local stdio server</div>
+    <div class="field">
+      <label for="mcpName">Name</label>
+      <input type="text" id="mcpName" placeholder="filesystem" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="mcpCommand">Command</label>
+      <input type="text" id="mcpCommand" placeholder="npx" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="mcpArgs">Arguments (one per line)</label>
+      <textarea id="mcpArgs" placeholder="-y&#10;@modelcontextprotocol/server-filesystem&#10;C:\Users\you\Projects" spellcheck="false"></textarea>
+    </div>
+    <div class="field">
+      <label for="mcpCwd">Working directory (optional, absolute)</label>
+      <input type="text" id="mcpCwd" placeholder="C:\Users\you\Projects" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="mcpEnv">Environment variables (optional, KEY=VALUE per line)</label>
+      <textarea id="mcpEnv" placeholder="LOG_LEVEL=info" spellcheck="false"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="closeMcp">Close</button>
+      <button class="btn primary" id="addMcpBtn">Add server</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<div class="modal-backdrop open" id="activationBackdrop" style="z-index:100">
+  <div class="modal" style="max-width:560px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <img src="/logo.png" alt="Deep Code" style="height:42px;width:auto;border-radius:8px">
+      <div>
+        <h2 style="margin:0">Activate Deep Code</h2>
+        <p class="sub" style="margin:0">This installation requires an access code from the owner.</p>
+      </div>
+    </div>
+
+    <div class="section-label">Installation ID</div>
+    <div style="font-size:15px;font-weight:600;letter-spacing:.08em;margin-bottom:6px" id="activationInstallId">-</div>
+    <p class="sub">Send this ID to the owner. The code they send back only works on this computer.</p>
+
+    <div class="section-label">Option 1 - Email the owner</div>
+    <p class="sub" style="margin-bottom:8px">Open your email app with a prefilled request to <strong>chandandeepsinghwalia@gmail.com</strong>.</p>
+    <div class="row" style="margin-bottom:12px">
+      <input id="activationName" type="text" placeholder="Your name" style="flex:1">
+      <input id="activationEmail" type="text" placeholder="Your email" style="flex:1">
+    </div>
+    <textarea id="activationNote" placeholder="Optional note for the owner" style="width:100%;min-height:60px;margin-bottom:8px"></textarea>
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn primary" id="activationEmailBtn">Open email request</button>
+      <button class="btn" id="activationCopyIdBtn">Copy install ID</button>
+    </div>
+
+    <div class="section-label">Option 2 - Public approval server</div>
+    <p class="sub" style="margin-bottom:8px">If the owner gave you a free public server URL, enter it here. The app will submit the request and poll for approval.</p>
+    <div class="row" style="margin-bottom:8px">
+      <input id="activationServer" type="text" placeholder="https://your-free-server.example" style="flex:1">
+      <button class="btn" id="activationRequestBtn">Submit request</button>
+    </div>
+    <div id="activationRequestStatus" class="hint" style="text-align:left;margin-bottom:12px"></div>
+
+    <div class="section-label">Enter access code</div>
+    <div class="field" style="margin-bottom:8px">
+      <input id="activationCode" type="text" placeholder="WALIA1...." style="width:100%">
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn primary" id="activationActivateBtn">Activate</button>
+    </div>
+    <div id="activationError" style="color:var(--red);font-size:12px;margin-top:8px"></div>
+  </div>
+</div>
 
 <script>
 const state = {
-  config: { base_url: "", model: "", workspace: "", api_key_configured: false },
+  config: { base_url: "", model: "", workspace: "", personality_mode: "auto", chaos_level: 1, privacy_mode: "local-first", api_key_configured: false },
   sessions: [],
   sessionId: null,
   busy: false,
-  approvals: []
+  approvals: [],
+  projects: [],
+  activeProject: ""
 };
 let freeModelsCache = null;
+const emptyTemplate = document.querySelector("#messages .empty");
 
 const $ = (id) => document.getElementById(id);
 
@@ -366,15 +921,24 @@ async function api(path, options) {
 
 function updateModelChip() {
   const chip = $("modelChip");
+  const text = $("modelChipText");
+  const composer = $("composerModel");
+  const dot = $("modelDot");
   if (!state.config.model) {
-    chip.textContent = "model not configured";
+    text.textContent = "model not configured";
+    if (composer) composer.textContent = "not configured";
+    if (dot) { dot.className = "dot"; dot.style.background = "var(--red)"; dot.style.boxShadow = "0 0 10px rgba(255,69,58,.7)"; }
     return;
   }
   let host = "";
   try { host = new URL(state.config.base_url).host; } catch (e) { host = state.config.base_url; }
   const model = state.config.model;
-  const isFree = host.endsWith("opencode.ai") && (model === "big-pickle" || model.toLowerCase().endsWith("-free"));
-  chip.textContent = model + (isFree && !state.config.api_key_configured ? " (free)" : "") + " @ " + host;
+  const freeHost = host.endsWith("opencode.ai") || host.endsWith("pollinations.ai") || host.startsWith("127.0.0.1") || host.startsWith("localhost");
+  const isFree = freeHost && (model === "big-pickle" || model.toLowerCase().endsWith("-free") || host.endsWith("pollinations.ai") || host.startsWith("127.0.0.1") || host.startsWith("localhost"));
+  const freeLabel = isFree && !state.config.api_key_configured ? " (free)" : "";
+  text.textContent = model + freeLabel + " @ " + host;
+  if (composer) composer.textContent = model + (isFree ? " · keyless" : "");
+  if (dot) { dot.className = "dot" + (isFree ? "" : " blue"); dot.style.background = ""; dot.style.boxShadow = ""; }
   chip.title = state.config.base_url + " | " + model;
 }
 
@@ -390,19 +954,267 @@ function renderSessions() {
     return;
   }
   for (const session of state.sessions) {
-    const button = document.createElement("button");
-    button.className = "session" + (session.id === state.sessionId ? " active" : "");
+    const row = document.createElement("div");
+    row.className = "session" + (session.id === state.sessionId ? " active" : "");
+    row.setAttribute("role", "button");
+    row.tabIndex = 0;
     const title = document.createElement("span");
     title.className = "title";
     title.textContent = session.title || "New chat";
     const meta = document.createElement("span");
     meta.className = "meta";
     meta.textContent = (session.message_count || 0) + " messages";
-    button.appendChild(title);
-    button.appendChild(meta);
-    button.addEventListener("click", () => selectSession(session.id));
-    box.appendChild(button);
+    const actions = document.createElement("span");
+    actions.className = "session-actions";
+    const rename = document.createElement("button");
+    rename.className = "session-action";
+    rename.title = "Rename chat";
+    rename.textContent = "✎";
+    rename.addEventListener("click", (event) => {
+      event.stopPropagation();
+      renameSession(session).catch((e) => toast(e.message, true));
+    });
+    const remove = document.createElement("button");
+    remove.className = "session-action";
+    remove.title = "Delete chat";
+    remove.textContent = "×";
+    remove.addEventListener("click", (event) => {
+      event.stopPropagation();
+      deleteSession(session).catch((e) => toast(e.message, true));
+    });
+    actions.appendChild(rename);
+    actions.appendChild(remove);
+    row.appendChild(title);
+    row.appendChild(meta);
+    row.appendChild(actions);
+    row.addEventListener("click", () => selectSession(session.id));
+    row.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectSession(session.id);
+      }
+    });
+    box.appendChild(row);
   }
+}
+
+async function renameSession(session) {
+  const next = window.prompt("Rename chat", session.title || "New chat");
+  if (next === null) return;
+  const title = next.trim();
+  if (!title) return;
+  await api("/api/sessions/" + encodeURIComponent(session.id), {
+    method: "PATCH",
+    body: JSON.stringify({ title: title })
+  });
+  await loadSessions();
+  toast("Chat renamed.", false);
+}
+
+async function deleteSession(session) {
+  if (!window.confirm("Delete '" + (session.title || "New chat") + "'? This cannot be undone.")) return;
+  await api("/api/sessions/" + encodeURIComponent(session.id), { method: "DELETE" });
+  if (state.sessionId === session.id) {
+    state.sessionId = null;
+    renderMessages([]);
+  }
+  await loadSessions();
+  if (!state.sessionId && state.sessions.length) {
+    await selectSession(state.sessions[0].id);
+  }
+  toast("Chat deleted.", false);
+}
+
+function greetingLabel() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning, builder";
+  if (hour < 18) return "Good afternoon, builder";
+  return "Good evening, builder";
+}
+
+function applyGreeting(root) {
+  const scope = root || document;
+  const eyebrow = scope.querySelector(".empty .eyebrow");
+  if (eyebrow) eyebrow.textContent = greetingLabel();
+}
+
+async function loadUsage() {
+  const target = $("usageSummary");
+  if (!target) return;
+  try {
+    const usage = await api("/api/usage");
+    const today = usage.today || {};
+    target.textContent = "Today: " + Number(today.total_tokens || 0).toLocaleString() + " tokens · " + Number(today.requests || 0) + " requests";
+  } catch (error) { /* ignore */ }
+}
+
+function renderModelHub(data) {
+  const holder = $("modelHub");
+  if (!holder) return;
+  holder.textContent = "";
+  const models = data.models || [];
+  for (const model of models) {
+    const card = document.createElement("div");
+    card.className = "model-card" + (model.configured ? " active" : "");
+    const top = document.createElement("div");
+    top.className = "model-top";
+    const left = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "model-name";
+    name.textContent = model.label || model.id;
+    const provider = document.createElement("div");
+    provider.className = "model-provider";
+    provider.textContent = (model.provider || "") + " · " + model.id;
+    left.appendChild(name);
+    left.appendChild(provider);
+    const badges = document.createElement("div");
+    badges.className = "model-badges";
+    const addBadge = (label, cls) => {
+      const badge = document.createElement("span");
+      badge.className = "badge " + (cls || "");
+      badge.textContent = label;
+      badges.appendChild(badge);
+    };
+    if (model.location === "local") addBadge("local", "local");
+    if (model.free) addBadge("free", "free");
+    if (model.requires_key) addBadge("key", "key");
+    if (model.location === "local" && model.installed) addBadge("installed", "installed");
+    top.appendChild(left);
+    top.appendChild(badges);
+    card.appendChild(top);
+
+    const meta = document.createElement("div");
+    meta.className = "model-meta";
+    if (model.download_gb) meta.appendChild(Object.assign(document.createElement("span"), { textContent: "Download " + model.download_gb + " GB" }));
+    if (model.ram_gb) meta.appendChild(Object.assign(document.createElement("span"), { textContent: "RAM ~" + model.ram_gb + " GB" }));
+    if (model.location === "local" && !model.installed) meta.appendChild(Object.assign(document.createElement("span"), { textContent: "Not downloaded" }));
+    if (model.location === "local" && model.installed && !model.server_running) meta.appendChild(Object.assign(document.createElement("span"), { textContent: "Ready offline" }));
+    if (model.location === "local" && model.server_running) meta.appendChild(Object.assign(document.createElement("span"), { textContent: "Runtime running" }));
+    if (meta.childNodes.length) card.appendChild(meta);
+
+    const note = document.createElement("div");
+    note.className = "model-provider";
+    note.textContent = model.note || "";
+    card.appendChild(note);
+
+    const actions = document.createElement("div");
+    actions.className = "model-actions";
+    const use = document.createElement("button");
+    use.className = "btn small" + (model.configured ? " primary" : "");
+    use.textContent = model.configured ? "In use" : "Use";
+    use.addEventListener("click", () => {
+      $("baseUrl").value = model.base_url;
+      $("model").value = model.id;
+      if (model.requires_key) toast("Add an API key for " + model.provider + " before sending.", true);
+    });
+    actions.appendChild(use);
+    if (model.location === "local" && !model.installed) {
+      const download = document.createElement("button");
+      download.className = "btn small";
+      download.textContent = "Download";
+      download.addEventListener("click", () => requestModelDownload(model).catch((e) => toast(e.message, true)));
+      actions.appendChild(download);
+    }
+    if (model.location === "local" && model.installed) {
+      const start = document.createElement("button");
+      start.className = "btn small";
+      start.textContent = model.server_running ? "Restart offline" : "Start offline";
+      start.addEventListener("click", async () => {
+        start.disabled = true;
+        start.textContent = "Starting...";
+        try {
+          await api("/api/local-model/start", { method: "POST" });
+          toast("Offline model is ready.", false);
+          loadModelHub();
+        } catch (error) {
+          toast(error.message, true);
+          start.disabled = false;
+          start.textContent = "Start offline";
+        }
+      });
+      actions.appendChild(start);
+    }
+    card.appendChild(actions);
+    holder.appendChild(card);
+  }
+}
+
+async function loadModelHub() {
+  try {
+    const data = await api("/api/models/catalog");
+    renderModelHub(data);
+  } catch (error) {
+    const holder = $("modelHub");
+    if (holder) holder.textContent = "Could not load models: " + error.message;
+  }
+}
+
+async function requestModelDownload(model) {
+  const result = await api("/api/models/download", {
+    method: "POST",
+    body: JSON.stringify({ model: model.id, session_id: state.sessionId })
+  });
+  toast(result.message || "Download approval created.", false);
+  $("settingsModal").classList.remove("open");
+  state.approvals = await api("/api/approvals");
+  renderApprovals();
+}
+
+async function refreshDownloads() {
+  const target = $("downloadStatus");
+  const globalBox = $("globalDownload");
+  try {
+    const jobs = await api("/api/models/downloads");
+    const running = jobs.filter((job) => job.status === "running");
+    if (target) {
+      target.textContent = "";
+      if (jobs.length && !running.length) {
+        const latest = jobs[jobs.length - 1];
+        const line = document.createElement("div");
+        line.className = "model-provider";
+        line.textContent = "Last download: " + latest.model + " - " + latest.status;
+        target.appendChild(line);
+        if (latest.status === "done" && !latest._reloaded) {
+          latest._reloaded = true;
+          loadModelHub();
+        }
+      }
+      for (const job of running) {
+        const row = document.createElement("div");
+        row.className = "download-row";
+        const label = document.createElement("div");
+        label.className = "label";
+        const name = document.createElement("span");
+        name.textContent = "Downloading " + job.model;
+        const percent = document.createElement("span");
+        const value = Number(job.progress || 0);
+        percent.textContent = value > 0 ? value + "%" : "starting...";
+        label.appendChild(name);
+        label.appendChild(percent);
+        const bar = document.createElement("progress");
+        bar.max = 100;
+        bar.value = value;
+        row.appendChild(label);
+        row.appendChild(bar);
+        target.appendChild(row);
+      }
+    }
+    if (globalBox) {
+      if (!running.length) {
+        globalBox.hidden = true;
+      } else {
+        const job = running[0];
+        const value = Number(job.progress || 0);
+        globalBox.hidden = false;
+        $("globalDownloadLabel").textContent = running.length > 1
+          ? "Downloading " + job.model + " +" + (running.length - 1) + " more"
+          : "Downloading " + job.model;
+        $("globalDownloadPct").textContent = value > 0 ? value + "%" : "starting...";
+        $("globalDownloadBar").value = value;
+      }
+    }
+    if (running.length) setTimeout(refreshDownloads, 3000);
+  } catch (error) { /* ignore */ }
 }
 
 function addMessage(role, content) {
@@ -428,10 +1240,15 @@ function renderMessages(messages) {
   const container = $("messages");
   container.textContent = "";
   if (!messages.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.innerHTML = "<h1>Deep Code by C.Walia</h1><div>Start the conversation below.</div>";
-    container.appendChild(empty);
+    if (emptyTemplate) {
+      container.appendChild(emptyTemplate.cloneNode(true));
+      applyGreeting(container);
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Start the conversation below.";
+      container.appendChild(empty);
+    }
     return;
   }
   for (const message of messages) {
@@ -447,11 +1264,29 @@ function describeApproval(approval) {
   if (approval.kind === "write_file") {
     return "Write file: " + (payload.path || "?") + "\n\n" + String(payload.content || "").slice(0, 4000);
   }
+  if (approval.kind === "create_folder") {
+    return "Create folder: " + (payload.path || "?");
+  }
+  if (approval.kind === "create_file") {
+    return "Create file: " + (payload.path || "?") + "\n\n" + String(payload.content || "").slice(0, 4000);
+  }
+  if (approval.kind === "move_path") {
+    return "Move or rename:\n\n" + (payload.source || "?") + "  ->  " + (payload.destination || "?");
+  }
+  if (approval.kind === "delete_path") {
+    return "DELETE: " + (payload.path || "?") + (payload.recursive ? "\n\nThis removes the folder and everything inside it." : "");
+  }
   if (approval.kind === "command") {
     return "Run command in " + (payload.cwd || ".") + "\n\n" + (payload.argv || []).join(" ");
   }
   if (approval.kind === "https_get") {
     return "Fetch URL (read-only)\n\n" + (payload.url || "");
+  }
+  if (approval.kind === "local_model_download" || approval.kind === "model_download") {
+    return "Download offline model: " + (payload.model || "?") + "\n\nAbout 1.96 GB from Hugging Face. No Ollama is used.";
+  }
+  if (approval.kind === "mcp_call") {
+    return "MCP tool call on " + (payload.server_name || payload.server || "?") + "\n\nTool: " + (payload.tool || "?") + "\n\nArguments:\n" + JSON.stringify(payload.arguments || {}, null, 2);
   }
   return JSON.stringify(payload, null, 2);
 }
@@ -567,6 +1402,7 @@ async function sendMessage() {
     if (node) node.remove();
     state.busy = false;
     $("sendBtn").disabled = false;
+    loadUsage();
     input.focus();
   }
 }
@@ -584,6 +1420,7 @@ async function decideApproval(approvalId, approved) {
     }
     state.approvals = await api("/api/approvals");
     renderApprovals();
+    if (approved) refreshDownloads();
   } catch (error) {
     toast(error.message, true);
   }
@@ -625,15 +1462,38 @@ function renderFreeModels(holder, models) {
   });
 }
 
-function openSettings() {
+async function loadPersonalities() {
+  const select = $("personalityMode");
+  if (!select) return;
+  try {
+    const data = await api("/api/personalities");
+    const current = state.config.personality_mode || "auto";
+    select.textContent = "";
+    for (const pack of data.personalities || []) {
+      const option = document.createElement("option");
+      option.value = pack.id;
+      option.textContent = pack.label + " — " + pack.description;
+      select.appendChild(option);
+    }
+    select.value = current;
+    if (!select.value) select.value = "auto";
+  } catch (error) { /* static fallback options remain */ }
+}
+
+async function openSettings() {
   $("baseUrl").value = state.config.base_url || "";
   $("model").value = state.config.model || "";
   $("workspace").value = state.config.workspace || "";
+  $("chaosLevel").value = String(state.config.chaos_level ?? 1);
   $("apiKey").value = "";
   $("clearKey").checked = false;
   $("settingsModal").classList.add("open");
   $("baseUrl").focus();
+  await loadPersonalities();
+  $("personalityMode").value = state.config.personality_mode || "auto";
   loadFreeModels();
+  loadModelHub();
+  refreshDownloads();
 }
 
 async function saveSettings() {
@@ -654,6 +1514,9 @@ async function saveSettings() {
     base_url: baseUrl,
     model: model,
     workspace: $("workspace").value.trim(),
+    personality_mode: $("personalityMode").value,
+    chaos_level: Number($("chaosLevel").value || 1),
+    privacy_mode: state.config.privacy_mode || "local-first",
     clear_api_key: clearKey
   };
   if (key) payload.api_key = key;
@@ -663,9 +1526,13 @@ async function saveSettings() {
       base_url: result.base_url,
       model: result.model,
       workspace: result.workspace,
+      personality_mode: result.personality_mode,
+      chaos_level: result.chaos_level,
+      privacy_mode: result.privacy_mode,
       api_key_configured: result.api_key_configured
     };
     updateModelChip();
+    await loadProjects();
     $("settingsModal").classList.remove("open");
     toast("Settings saved.", false);
   } catch (error) {
@@ -676,15 +1543,128 @@ async function saveSettings() {
 function applyPreset(name) {
   const presets = {
     opencode: { url: "https://opencode.ai/zen/v1", model: "big-pickle" },
+    pollinations: { url: "https://text.pollinations.ai/v1", model: "openai-fast" },
     github: { url: "https://models.github.ai/inference", model: "openai/gpt-4o-mini" },
     openrouter: { url: "https://openrouter.ai/api/v1", model: "qwen/qwen3-coder:free" },
-    ollama: { url: "http://127.0.0.1:11434/v1", model: "qwen3-coder:14b" },
+    offline: { url: "http://127.0.0.1:11435/v1", model: "qwen2.5-coder-3b-instruct-q4" },
     openai: { url: "https://api.openai.com/v1", model: "gpt-4o-mini" }
   };
   const preset = presets[name];
   if (!preset) return;
   $("baseUrl").value = preset.url;
   $("model").value = preset.model;
+}
+
+function projectLabel(path) {
+  if (!path) return "No project";
+  const parts = String(path).split(/[\\/]+/).filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : String(path);
+}
+
+async function loadProjects() {
+  const data = await api("/api/projects");
+  state.projects = data.projects || [];
+  state.activeProject = data.active || "";
+  renderProjects();
+  return data;
+}
+
+function renderProjects() {
+  const chip = $("projectChipText");
+  if (chip) chip.textContent = projectLabel(state.activeProject || state.config.workspace);
+  const box = $("projectList");
+  if (!box) return;
+  box.textContent = "";
+  if (!state.projects.length) {
+    const empty = document.createElement("span");
+    empty.className = "hint";
+    empty.textContent = "No projects linked yet. Browse for a folder to get started.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const project of state.projects) {
+    const item = document.createElement("div");
+    item.className = "project-item" + (project.active ? " active" : "");
+    const info = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "project-name";
+    name.textContent = project.name || projectLabel(project.path);
+    const path = document.createElement("div");
+    path.className = "project-path";
+    path.textContent = project.path;
+    info.appendChild(name);
+    info.appendChild(path);
+    const actions = document.createElement("div");
+    actions.className = "project-actions";
+    if (!project.active) {
+      const use = document.createElement("button");
+      use.className = "btn small";
+      use.type = "button";
+      use.textContent = "Use";
+      use.addEventListener("click", () => activateProject(project.id).catch((error) => toast(error.message, true)));
+      actions.appendChild(use);
+    } else {
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = "Active";
+      actions.appendChild(badge);
+    }
+    const remove = document.createElement("button");
+    remove.className = "btn small ghost";
+    remove.type = "button";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => removeProject(project).catch((error) => toast(error.message, true)));
+    actions.appendChild(remove);
+    item.appendChild(info);
+    item.appendChild(actions);
+    box.appendChild(item);
+  }
+}
+
+async function openProjects() {
+  $("projectsModal").classList.add("open");
+  try {
+    await loadProjects();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function pickFolder() {
+  const result = await api("/api/projects/browse", { method: "POST" });
+  return result.path || "";
+}
+
+async function addProject(path, name) {
+  if (!path) return null;
+  const data = await api("/api/projects", {
+    method: "POST",
+    body: JSON.stringify({ path, name: name || "", activate: true })
+  });
+  state.config.workspace = data.active || path;
+  $("workspace").value = state.config.workspace;
+  await loadProjects();
+  toast("Project linked: " + projectLabel(path), false);
+  return data.project;
+}
+
+async function activateProject(projectId) {
+  const data = await api("/api/projects/" + encodeURIComponent(projectId) + "/activate", { method: "POST" });
+  state.config.workspace = data.workspace || "";
+  $("workspace").value = state.config.workspace;
+  await loadProjects();
+  toast("Active project: " + projectLabel(data.workspace), false);
+}
+
+async function removeProject(project) {
+  if (!window.confirm("Remove " + (project.name || projectLabel(project.path)) + " from the project list? The folder itself is not deleted.")) return;
+  await api("/api/projects/" + encodeURIComponent(project.id), { method: "DELETE" });
+  if (state.config.workspace && state.config.workspace.toLowerCase() === project.path.toLowerCase()) {
+    state.config.workspace = "";
+    $("workspace").value = "";
+  }
+  await loadProjects();
+  toast("Project removed.", false);
 }
 
 async function openSkills() {
@@ -712,20 +1692,385 @@ async function openSkills() {
   }
 }
 
+function renderMemories(memories) {
+  const box = $("memoryList");
+  box.textContent = "";
+  if (!memories.length) {
+    const empty = document.createElement("span");
+    empty.className = "hint";
+    empty.textContent = "No memories saved yet.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const memory of memories) {
+    const item = document.createElement("div");
+    item.className = "memory-item";
+    const text = document.createElement("div");
+    text.className = "memory-text";
+    text.textContent = memory.content;
+    const meta = document.createElement("div");
+    meta.className = "memory-meta";
+    const tags = memory.tags ? " · " + memory.tags : "";
+    meta.textContent = "Priority " + memory.importance + " · " + memory.source + tags;
+    const actions = document.createElement("div");
+    actions.className = "memory-actions";
+    const remove = document.createElement("button");
+    remove.className = "btn small ghost";
+    remove.type = "button";
+    remove.textContent = "Forget";
+    remove.addEventListener("click", () => deleteMemory(memory).catch((error) => toast(error.message, true)));
+    actions.appendChild(remove);
+    item.appendChild(text);
+    item.appendChild(meta);
+    item.appendChild(actions);
+    box.appendChild(item);
+  }
+}
+
+async function loadMemories(query) {
+  const suffix = query ? "?q=" + encodeURIComponent(query) : "";
+  const data = await api("/api/memories" + suffix);
+  renderMemories(data.memories || []);
+}
+
+async function openMemory() {
+  $("memoryModal").classList.add("open");
+  $("memorySearch").value = "";
+  try {
+    await loadMemories("");
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function addMemory() {
+  const content = $("memoryText").value.trim();
+  if (!content) {
+    toast("Write something to remember first.", true);
+    return;
+  }
+  await api("/api/memories", {
+    method: "POST",
+    body: JSON.stringify({
+      content: content,
+      tags: $("memoryTags").value.trim(),
+      importance: Number($("memoryImportance").value || 3)
+    })
+  });
+  $("memoryText").value = "";
+  $("memoryTags").value = "";
+  $("memorySearch").value = "";
+  await loadMemories("");
+  toast("Memory saved.", false);
+}
+
+async function deleteMemory(memory) {
+  if (!window.confirm("Forget this memory?\n\n" + memory.content)) return;
+  await api("/api/memories/" + encodeURIComponent(memory.id), { method: "DELETE" });
+  await loadMemories($("memorySearch").value.trim());
+  toast("Memory removed.", false);
+}
+
+function parseMcpLines(value) {
+  return String(value || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+}
+
+function parseMcpEnv(value) {
+  const env = {};
+  for (const line of parseMcpLines(value)) {
+    const index = line.indexOf("=");
+    if (index < 1) throw new Error("Environment lines must look like KEY=VALUE.");
+    env[line.slice(0, index).trim()] = line.slice(index + 1);
+  }
+  return env;
+}
+
+function renderMcpServers(servers) {
+  const box = $("mcpList");
+  box.textContent = "";
+  if (!servers.length) {
+    const empty = document.createElement("span");
+    empty.className = "hint";
+    empty.textContent = "No MCP servers configured.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const server of servers) {
+    const item = document.createElement("div");
+    item.className = "mcp-item";
+    const name = document.createElement("div");
+    name.className = "project-name";
+    name.textContent = (server.name || server.id) + (server.enabled ? "" : " (disabled)");
+    const meta = document.createElement("div");
+    meta.className = "mcp-meta";
+    const command = [server.command].concat(server.args || []).join(" ");
+    meta.textContent = command + (server.env_keys && server.env_keys.length ? " · env: " + server.env_keys.join(", ") : "");
+    item.appendChild(name);
+    item.appendChild(meta);
+    if (server.last_error) {
+      const error = document.createElement("div");
+      error.className = "memory-meta";
+      error.style.color = "var(--red)";
+      error.textContent = server.last_error;
+      item.appendChild(error);
+    }
+    const tools = document.createElement("div");
+    tools.className = "mcp-tools";
+    for (const tool of server.tools || []) {
+      const badge = document.createElement("span");
+      badge.className = "mcp-tool";
+      badge.textContent = tool.name;
+      badge.title = tool.description || "";
+      tools.appendChild(badge);
+    }
+    if (!(server.tools || []).length) {
+      const empty = document.createElement("span");
+      empty.className = "mcp-tool danger";
+      empty.textContent = "No discovered tools";
+      tools.appendChild(empty);
+    }
+    item.appendChild(tools);
+    const actions = document.createElement("div");
+    actions.className = "mcp-actions";
+    const discover = document.createElement("button");
+    discover.className = "btn small";
+    discover.type = "button";
+    discover.textContent = "Discover tools";
+    discover.disabled = !server.enabled;
+    discover.addEventListener("click", async () => {
+      if (!window.confirm("Start this local MCP server to list its tools?\n\n" + command)) return;
+      discover.disabled = true;
+      discover.textContent = "Starting...";
+      try {
+        const data = await api("/api/mcp/servers/" + encodeURIComponent(server.id) + "/discover", { method: "POST" });
+        toast("Discovered " + (data.server.tools || []).length + " tool(s) from " + (server.name || server.id) + ".", false);
+        await loadMcpServers();
+      } catch (error) {
+        toast(error.message, true);
+        discover.disabled = false;
+        discover.textContent = "Discover tools";
+      }
+    });
+    const toggle = document.createElement("button");
+    toggle.className = "btn small ghost";
+    toggle.type = "button";
+    toggle.textContent = server.enabled ? "Disable" : "Enable";
+    toggle.addEventListener("click", () => toggleMcpServer(server).catch((error) => toast(error.message, true)));
+    const remove = document.createElement("button");
+    remove.className = "btn small ghost";
+    remove.type = "button";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => removeMcpServer(server).catch((error) => toast(error.message, true)));
+    actions.appendChild(discover);
+    actions.appendChild(toggle);
+    actions.appendChild(remove);
+    item.appendChild(actions);
+    box.appendChild(item);
+  }
+}
+
+async function loadMcpServers() {
+  const data = await api("/api/mcp/servers");
+  renderMcpServers(data.servers || []);
+}
+
+async function openMcp() {
+  $("mcpModal").classList.add("open");
+  try {
+    await loadMcpServers();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function addMcpServer() {
+  const name = $("mcpName").value.trim();
+  const command = $("mcpCommand").value.trim();
+  if (!name || !command) {
+    toast("MCP name and command are required.", true);
+    return;
+  }
+  await api("/api/mcp/servers", {
+    method: "POST",
+    body: JSON.stringify({
+      name: name,
+      command: command,
+      args: parseMcpLines($("mcpArgs").value),
+      cwd: $("mcpCwd").value.trim(),
+      env: parseMcpEnv($("mcpEnv").value),
+      enabled: true
+    })
+  });
+  $("mcpName").value = "";
+  $("mcpCommand").value = "";
+  $("mcpArgs").value = "";
+  $("mcpCwd").value = "";
+  $("mcpEnv").value = "";
+  await loadMcpServers();
+  toast("MCP server added. Run Discover tools to inspect it.", false);
+}
+
+async function toggleMcpServer(server) {
+  await api("/api/mcp/servers/" + encodeURIComponent(server.id), {
+    method: "PATCH",
+    body: JSON.stringify({ enabled: !server.enabled })
+  });
+  await loadMcpServers();
+}
+
+async function removeMcpServer(server) {
+  if (!window.confirm("Remove MCP server " + (server.name || server.id) + "? Its configuration is deleted; the command is not uninstalled.")) return;
+  await api("/api/mcp/servers/" + encodeURIComponent(server.id), { method: "DELETE" });
+  await loadMcpServers();
+  toast("MCP server removed.", false);
+}
+
+async function loadActivationStatus() {
+  try {
+    const status = await api("/api/activation/status");
+    $("activationInstallId").textContent = status.install_id || "-";
+    if (status.activated) {
+      $("activationBackdrop").classList.remove("open");
+      $("activationBackdrop").style.display = "none";
+    }
+    return status;
+  } catch (error) {
+    toast(error.message, true);
+    return null;
+  }
+}
+
+function setActivationError(message) {
+  const el = $("activationError");
+  if (el) el.textContent = message || "";
+}
+
+async function submitActivationRequest() {
+  setActivationError("");
+  const status = $("activationRequestStatus");
+  try {
+    const result = await api("/api/activation/request", {
+      method: "POST",
+      body: JSON.stringify({
+        name: $("activationName").value.trim(),
+        email: $("activationEmail").value.trim(),
+        note: $("activationNote").value.trim(),
+        server: $("activationServer").value.trim() || null
+      })
+    });
+    if (result.mode === "server") {
+      if (status) status.textContent = "Request submitted. Ticket: " + result.ticket + ". Waiting for owner approval.";
+      toast("Activation request submitted.", false);
+      pollActivation();
+    } else {
+      if (status) status.textContent = "No public server configured. Use the email button to request access.";
+      if (result.mailto) window.location.href = result.mailto;
+    }
+  } catch (error) {
+    setActivationError(error.message);
+  }
+}
+
+async function activateCode() {
+  setActivationError("");
+  try {
+    await api("/api/activation/activate", {
+      method: "POST",
+      body: JSON.stringify({ code: $("activationCode").value.trim() })
+    });
+    toast("Activated. Welcome to Deep Code.", false);
+    $("activationBackdrop").classList.remove("open");
+    $("activationBackdrop").style.display = "none";
+    await loadConfig();
+    await loadSessions();
+  } catch (error) {
+    setActivationError(error.message);
+  }
+}
+
+async function pollActivation() {
+  try {
+    const result = await api("/api/activation/check", { method: "POST" });
+    if (result.status === "approved") {
+      toast("Approved and activated.", false);
+      $("activationBackdrop").classList.remove("open");
+      $("activationBackdrop").style.display = "none";
+      await loadConfig();
+      await loadSessions();
+      return;
+    }
+    if (result.status === "rejected") {
+      setActivationError(result.message || "Request rejected.");
+      return;
+    }
+    if (result.status === "error") {
+      setActivationError(result.message || "Could not check status.");
+    }
+    setTimeout(pollActivation, 8000);
+  } catch (error) {
+    setActivationError(error.message);
+  }
+}
+
 function autoGrow(textarea) {
   textarea.style.height = "auto";
   textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px";
 }
 
+$("activationEmailBtn").addEventListener("click", () => {
+  const name = $("activationName").value.trim();
+  const email = $("activationEmail").value.trim();
+  const note = $("activationNote").value.trim();
+  const id = $("activationInstallId").textContent.trim();
+  const subject = encodeURIComponent("Deep Code activation request - " + id);
+  const body = encodeURIComponent("Install ID: " + id + "\nName: " + (name || "(not provided)") + "\nEmail: " + (email || "(not provided)") + "\nNote: " + (note || "(none)") + "\n\nPlease approve this installation and send me the access code.");
+  window.location.href = "mailto:chandandeepsinghwalia@gmail.com?subject=" + subject + "&body=" + body;
+});
+$("activationCopyIdBtn").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("activationInstallId").textContent.trim()); toast("Install ID copied.", false); }
+  catch (e) { toast("Could not copy. Select the ID manually.", true); }
+});
+$("activationRequestBtn").addEventListener("click", () => submitActivationRequest().catch((e) => toast(e.message, true)));
+$("activationActivateBtn").addEventListener("click", () => activateCode().catch((e) => toast(e.message, true)));
 $("newChatBtn").addEventListener("click", () => newChat().catch((e) => toast(e.message, true)));
 $("sendBtn").addEventListener("click", sendMessage);
 $("settingsBtn").addEventListener("click", openSettings);
+$("projectChip").addEventListener("click", () => openProjects());
+$("closeProjects").addEventListener("click", () => $("projectsModal").classList.remove("open"));
+$("browseWorkspaceBtn").addEventListener("click", () => {
+  pickFolder().then((path) => { if (path) $("workspace").value = path; }).catch((error) => toast(error.message, true));
+});
+$("browseProjectBtn").addEventListener("click", () => {
+  pickFolder().then((path) => (path ? addProject(path, "") : null)).catch((error) => toast(error.message, true));
+});
+$("addProjectPathBtn").addEventListener("click", () => {
+  const path = window.prompt("Absolute path to the project folder:");
+  if (path && path.trim()) addProject(path.trim(), "").catch((error) => toast(error.message, true));
+});
 $("cancelSettings").addEventListener("click", () => $("settingsModal").classList.remove("open"));
 $("saveSettings").addEventListener("click", saveSettings);
 $("skillsBtn").addEventListener("click", openSkills);
 $("closeSkills").addEventListener("click", () => $("skillsModal").classList.remove("open"));
+$("memoryBtn").addEventListener("click", () => openMemory());
+$("closeMemory").addEventListener("click", () => $("memoryModal").classList.remove("open"));
+$("addMemoryBtn").addEventListener("click", () => addMemory().catch((error) => toast(error.message, true)));
+$("memorySearchBtn").addEventListener("click", () => loadMemories($("memorySearch").value.trim()).catch((error) => toast(error.message, true)));
+$("memorySearch").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") loadMemories($("memorySearch").value.trim()).catch((error) => toast(error.message, true));
+});
+$("mcpBtn").addEventListener("click", () => openMcp());
+$("closeMcp").addEventListener("click", () => $("mcpModal").classList.remove("open"));
+$("addMcpBtn").addEventListener("click", () => addMcpServer().catch((error) => toast(error.message, true)));
 document.querySelectorAll("[data-preset]").forEach((button) => {
   button.addEventListener("click", () => applyPreset(button.getAttribute("data-preset")));
+});
+$("messages").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-prompt]");
+  if (!button) return;
+  const input = $("input");
+  input.value = button.getAttribute("data-prompt") || "";
+  autoGrow(input);
+  input.focus();
 });
 $("input").addEventListener("input", (event) => autoGrow(event.target));
 $("input").addEventListener("keydown", (event) => {
@@ -742,9 +2087,16 @@ document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
 
 (async function init() {
   try {
+    const status = await loadActivationStatus();
+    if (!status || !status.activated) {
+      return;
+    }
     await loadConfig();
+    await loadProjects();
     await loadSessions();
     await loadApprovals();
+    await loadUsage();
+    applyGreeting(document);
     if (state.sessions.length) {
       await selectSession(state.sessions[0].id);
     }
